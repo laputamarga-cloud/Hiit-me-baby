@@ -1,20 +1,18 @@
-HIIT ME BABY · v0.4
+HIIT ME BABY v0.5 — BIBLIOTECA VISUAL FEMENINA COMPLETA
 
-QUÉ CAMBIA
-- Guía visual en todas las rutinas de fuerza actuales.
-- Se mantienen las 6 ilustraciones propias de Full Body A.
-- Añadidas ilustraciones propias para plancha, plancha lateral y tríceps con apoyo.
-- Los movimientos restantes usan poses inicio/final de RepDB y se guardan en caché al cargarse.
-- Durante los descansos se sigue mostrando el ejercicio que viene después.
-- No cambia la voz, los pitidos, el selector de rondas ni el temporizador por reloj real.
+SUBE A GITHUB SOLO ESTOS 3 ARCHIVOS:
+- app.js
+- styles.css
+- service-worker.js
 
-PARA ACTUALIZAR
-1. En GitHub abre Hiit-me-baby.
-2. Add file > Upload files.
-3. Sube app.js, styles.css y service-worker.js de esta carpeta.
-4. Commit changes directamente en main.
-5. NO desinstales la app del móvil.
-6. Abre una vez la URL en el navegador con conexión para que cargue/cachee las nuevas imágenes.
+Ruta:
+Repositorio Hiit-me-baby → Add file → Upload files
+Arrastra los 3 archivos → Commit changes → main.
 
-CRÉDITO
-Las ilustraciones externas se usan bajo la licencia del free tier de RepDB, con atribución visible dentro de la app.
+No desinstales la PWA del móvil.
+
+Qué cambia:
+- 24 ejercicios de fuerza con guía visual femenina.
+- Se eliminan las ilustraciones masculinas y las imágenes externas de RepDB.
+- Las imágenes van incrustadas y quedan disponibles offline después de actualizar la app.
+- Se mantienen voz, pitidos, rondas, bici, temporizador real y Wake Lock.
