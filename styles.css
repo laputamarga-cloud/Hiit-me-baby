@@ -58,7 +58,12 @@ h1{font-size:28px;line-height:1;margin:2px 0 0;letter-spacing:-.05em}
 .phase-label{font-size:12px;font-weight:950;letter-spacing:.13em;margin:0}
 .visual-cue{min-height:72px;display:flex;align-items:center;justify-content:center;font-size:42px;margin:2px auto 4px;transition:min-height .15s ease}
 .visual-cue.has-image{height:clamp(150px,42vw,225px);width:100%;max-width:620px;padding:4px}
-.visual-cue img{display:block;width:100%;height:100%;object-fit:contain;object-position:center;border-radius:18px;background:#fff;user-select:none;-webkit-user-drag:none}
+.visual-cue>img{display:block;width:100%;height:100%;object-fit:contain;object-position:center;border-radius:18px;background:#fff;user-select:none;-webkit-user-drag:none}
+.pose-pair{width:100%;height:100%;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:4px;background:#fff;border-radius:18px;overflow:hidden;padding:4px 6px}
+.pose-pair img{display:block;width:100%;height:100%;min-width:0;object-fit:contain;background:#fff;user-select:none;-webkit-user-drag:none}
+.pose-arrow{font-size:clamp(22px,7vw,38px);font-weight:950;color:var(--pink);line-height:1}
+.credits{margin:16px 0 0;text-align:center;color:var(--muted);font-size:10px;line-height:1.4}
+.credits a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 .timer-value{font-size:clamp(62px,19vw,98px);line-height:.95;font-weight:950;letter-spacing:-.08em;margin:3px 0 12px;font-variant-numeric:tabular-nums}
 .coach-cue{min-height:42px;margin:0 auto;max-width:520px;font-size:15px;line-height:1.4}
 .next-cue{min-height:36px;margin:16px 0 0;padding-top:14px;border-top:1px solid var(--border);color:var(--muted);font-size:13px}

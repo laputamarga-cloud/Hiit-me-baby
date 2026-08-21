@@ -1,4 +1,4 @@
-const CACHE = 'hiit-me-baby-v3';
+const CACHE = 'hiit-me-baby-v4';
 const CORE = [
   './',
   './index.html',
@@ -36,9 +36,30 @@ async function networkFirst(request) {
   }
 }
 
+async function cacheExternalImage(request) {
+  const cache = await caches.open(CACHE);
+  const cached = await cache.match(request);
+  if (cached) return cached;
+  try {
+    const response = await fetch(request);
+    if (response && (response.ok || response.type === 'opaque')) {
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (_) {
+    return cached || Response.error();
+  }
+}
+
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
+
+  if (url.hostname === 'exercise-dataset.com' && url.pathname.startsWith('/images/flat/')) {
+    event.respondWith(cacheExternalImage(event.request));
+    return;
+  }
+
   if (url.origin !== self.location.origin) return;
 
   const destination = event.request.destination;

@@ -1,16 +1,20 @@
-HIIT ME BABY · actualización v0.3
+HIIT ME BABY · v0.4
 
-Sube a la RAÍZ del repositorio estos tres archivos y reemplaza los existentes:
-- app.js
-- styles.css
-- service-worker.js
+QUÉ CAMBIA
+- Guía visual en todas las rutinas de fuerza actuales.
+- Se mantienen las 6 ilustraciones propias de Full Body A.
+- Añadidas ilustraciones propias para plancha, plancha lateral y tríceps con apoyo.
+- Los movimientos restantes usan poses inicio/final de RepDB y se guardan en caché al cargarse.
+- Durante los descansos se sigue mostrando el ejercicio que viene después.
+- No cambia la voz, los pitidos, el selector de rondas ni el temporizador por reloj real.
 
-No hace falta subir las imágenes por separado: las 6 demos de Full Body A están comprimidas e incrustadas dentro de app.js.
-No desinstales la PWA del móvil.
+PARA ACTUALIZAR
+1. En GitHub abre Hiit-me-baby.
+2. Add file > Upload files.
+3. Sube app.js, styles.css y service-worker.js de esta carpeta.
+4. Commit changes directamente en main.
+5. NO desinstales la app del móvil.
+6. Abre una vez la URL en el navegador con conexión para que cargue/cachee las nuevas imágenes.
 
-Qué cambia:
-- Guía visual completa de Full Body A.
-- Durante el descanso se muestra ya el siguiente ejercicio.
-- Temporizador basado en tiempo real: al volver de segundo plano se resincroniza.
-- Wake Lock se vuelve a solicitar al regresar.
-- Caché v3 y búsqueda de actualizaciones más limpia.
+CRÉDITO
+Las ilustraciones externas se usan bajo la licencia del free tier de RepDB, con atribución visible dentro de la app.
