@@ -1,0 +1,16 @@
+HIIT ME BABY · actualización v0.3
+
+Sube a la RAÍZ del repositorio estos tres archivos y reemplaza los existentes:
+- app.js
+- styles.css
+- service-worker.js
+
+No hace falta subir las imágenes por separado: las 6 demos de Full Body A están comprimidas e incrustadas dentro de app.js.
+No desinstales la PWA del móvil.
+
+Qué cambia:
+- Guía visual completa de Full Body A.
+- Durante el descanso se muestra ya el siguiente ejercicio.
+- Temporizador basado en tiempo real: al volver de segundo plano se resincroniza.
+- Wake Lock se vuelve a solicitar al regresar.
+- Caché v3 y búsqueda de actualizaciones más limpia.
