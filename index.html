@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111111">
+  <meta name="description" content="HIIT de fuerza y entrenamientos guiados de bicicleta estática.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+  <title>Hiit Me Baby</title>
+</head>
+<body>
+  <main id="app" class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">TU ENTRENAMIENTO</p>
+        <h1>Hiit Me Baby</h1>
+      </div>
+      <button id="installBtn" class="icon-button" type="button" hidden aria-label="Instalar Hiit Me Baby">＋</button>
+    </header>
+
+    <section id="libraryScreen">
+      <nav class="tabs" aria-label="Tipo de entrenamiento">
+        <button class="tab active" id="strengthTab" type="button">FUERZA</button>
+        <button class="tab" id="bikeTab" type="button">BICI</button>
+      </nav>
+
+      <div id="routineList" class="routine-list"></div>
+
+      <section id="routineDetail" class="detail-card" aria-live="polite"></section>
+
+      <section id="roundPicker" class="round-picker">
+        <div>
+          <strong>Rondas</strong>
+          <span id="durationEstimate" class="muted"></span>
+        </div>
+        <div class="round-buttons" role="group" aria-label="Número de rondas">
+          <button type="button" data-rounds="1">1</button>
+          <button type="button" data-rounds="2" class="active">2</button>
+          <button type="button" data-rounds="3">3</button>
+        </div>
+      </section>
+
+      <button id="startBtn" class="primary-button" type="button">EMPEZAR</button>
+      <p id="voiceNotice" class="system-note" hidden></p>
+    </section>
+
+    <section id="playerScreen" hidden aria-live="polite">
+      <div class="player-heading">
+        <div>
+          <p id="playerRoutine" class="eyebrow"></p>
+          <strong id="playerRound"></strong>
+        </div>
+        <span id="playerProgressText" class="muted"></span>
+      </div>
+
+      <div class="progress-track" aria-hidden="true"><div id="progressBar" class="progress-bar"></div></div>
+
+      <section id="stage" class="stage">
+        <p id="phaseLabel" class="phase-label">PREPÁRATE</p>
+        <h2 id="exerciseName">Flexiones</h2>
+        <div id="visualCue" class="visual-cue" aria-hidden="true">⚡</div>
+        <div id="timerValue" class="timer-value">3</div>
+        <p id="coachCue" class="coach-cue"></p>
+        <p id="nextCue" class="next-cue"></p>
+      </section>
+
+      <div class="player-controls">
+        <button id="pauseBtn" class="primary-button" type="button">PAUSA</button>
+        <button id="skipBtn" class="secondary-button" type="button">SALTAR</button>
+        <button id="quitBtn" class="secondary-button" type="button">SALIR</button>
+      </div>
+    </section>
+
+    <section id="completeScreen" class="complete-screen" hidden>
+      <div class="complete-icon">⚡</div>
+      <p class="eyebrow">ENTRENAMIENTO COMPLETADO</p>
+      <h2 id="completeTitle">Hecho.</h2>
+      <p id="completeSummary" class="muted"></p>
+      <button id="backBtn" class="primary-button" type="button">VOLVER A RUTINAS</button>
+    </section>
+  </main>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>
