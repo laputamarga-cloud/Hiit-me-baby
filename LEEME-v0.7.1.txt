@@ -1,0 +1,25 @@
+HIIT ME BABY v0.7.1 — ARREGLO DE NAVEGACIÓN + ONBOARDING
+
+SUBE A GITHUB ESTOS 4 ARCHIVOS:
+- index.html
+- app.js
+- styles.css
+- service-worker.js
+
+QUÉ CORRIGE
+- Las pestañas vuelven a cambiar realmente de sección.
+- El atributo hidden ya no queda anulado por los estilos de las nuevas pantallas.
+- Si no existe perfil, las pestañas se ocultan y aparece primero el cuestionario.
+- Al guardar el cuestionario, se abre HOY y ya se puede entrar en ENTRENAR.
+
+CUESTIONARIO
+- Edad.
+- Sexo usado solo para la estimación energética.
+- Altura y peso.
+- Actividad FUERA del entrenamiento, con opción explícita de vida muy sedentaria.
+- Experiencia entrenando: empezando/retomando, ocasional o regular.
+- Objetivo, plazo, días, duración, material, bajo impacto y seguimiento de alimentación.
+- La experiencia evita recomendar de entrada la rutina Full Body más larga a quien está empezando.
+
+IMPORTANTE
+No desinstales la PWA. Sustituye los cuatro archivos y haz Commit changes en main.

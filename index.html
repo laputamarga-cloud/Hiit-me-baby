@@ -171,11 +171,13 @@
             <div class="form-grid">
               <label>Nombre o apodo (opcional)<input name="name" autocomplete="nickname" placeholder="—"></label>
               <label>Edad<input name="age" type="number" min="18" max="90" step="1" required></label>
-              <label>Sexo para estimación energética<select name="sex" required><option value="female">Mujer</option><option value="male">Hombre</option><option value="skip">No quiero calcular calorías</option></select></label>
+              <label>Sexo para la estimación energética<select name="sex" required><option value="female">Mujer</option><option value="male">Hombre</option><option value="skip">Prefiero no usar el cálculo energético</option></select></label>
               <label>Altura (cm)<input name="height" type="number" min="120" max="220" step="0.5" inputmode="decimal" required></label>
               <label>Peso actual (kg)<input name="weight" type="number" min="30" max="250" step="0.1" inputmode="decimal" required></label>
-              <label>Actividad diaria<select name="activity" required><option value="low">Mayormente sentada/o</option><option value="light" selected>Algo activa/o</option><option value="moderate">Bastante activa/o</option><option value="high">Muy activa/o</option></select></label>
+              <label>Actividad fuera del entrenamiento<select name="activity" required><option value="low">Muy sedentaria/o · casi todo el día sentada/o</option><option value="light" selected>Ligera · camino y me muevo algo</option><option value="moderate">Moderada · bastante movimiento diario</option><option value="high">Alta · trabajo o vida diaria muy activa</option></select></label>
+              <label>Experiencia entrenando<select name="experience" required><option value="beginner">Estoy empezando o retomando</option><option value="some">Entreno de vez en cuando</option><option value="regular">Entreno con regularidad</option></select></label>
             </div>
+            <p class="tiny-note">Edad, sexo, altura, peso y actividad se usan para estimar necesidades energéticas; la experiencia ayuda a no recomendar una progresión demasiado agresiva. Son orientaciones, no una valoración médica.</p>
           </section>
           <section class="profile-card">
             <p class="eyebrow">OBJETIVO</p><h3>¿Qué quieres conseguir?</h3>

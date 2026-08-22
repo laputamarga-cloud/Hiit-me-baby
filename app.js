@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.7.0';
+  const VERSION = '0.7.1';
 
   const STRENGTH = [
     {
@@ -476,7 +476,7 @@
     }
     const minutes=Number(profile.sessionMinutes)||20;
     if(minutes<=12) out=out.map((item)=>item.mode==='strength'?e('strength','Exprés 6'):e('bike','BICI 12 · No negociable'));
-    else if(minutes>=25&&equipment.includes('dumbbells')&&['lose_fat','strength','maintain'].includes(profile.goal)){
+    else if(minutes>=25&&equipment.includes('dumbbells')&&['lose_fat','strength','maintain'].includes(profile.goal)&&profile.experience!=='beginner'){
       const first=out.findIndex((item)=>item.mode==='strength');if(first>=0)out[first]=e('strength','Full Body · Completa');
     }
     if(!equipment.includes('dumbbells')) out=out.map((item)=>item.mode==='strength'?e('strength','Core HIIT'):item);
@@ -546,10 +546,10 @@
 
   function populateProfileForm(){
     if(!profile)return;const f=els.profileForm.elements;
-    ['name','age','sex','height','weight','activity','goal','timeframe','days','sessionMinutes','goalNote','nutritionMode'].forEach((key)=>{if(f[key])f[key].value=profile[key]??'';});
+    ['name','age','sex','height','weight','activity','experience','goal','timeframe','days','sessionMinutes','goalNote','nutritionMode'].forEach((key)=>{if(f[key])f[key].value=profile[key]??'';});
     const eq=Array.isArray(profile.equipment)?profile.equipment:[];els.profileForm.querySelectorAll('input[name="equipment"]').forEach((box)=>{box.checked=eq.includes(box.value);});if(f.lowImpact)f.lowImpact.checked=profile.lowImpact!==false;
   }
-  function renderProfile(){const onboarding=!profile;els.mainTabs.hidden=onboarding;els.profileCancel.hidden=onboarding;els.profileTitle.textContent=onboarding?'Vamos a situarnos':'Tu plan y objetivos';els.profileIntro.textContent=onboarding?'Un minuto ahora para que la app deje de recomendar cosas a ciegas.':'Cambia aquí tu objetivo, disponibilidad o nivel de seguimiento cuando tu vida cambie.';if(!onboarding)populateProfileForm();}
+  function renderProfile(){const onboarding=!profile;els.mainTabs.hidden=onboarding;els.profileCancel.hidden=onboarding;els.profileTitle.textContent=onboarding?'Vamos a situarnos':'Tu plan y objetivos';els.profileIntro.textContent=onboarding?'Primero situamos tu punto de partida: edad, sexo para el cálculo energético, sedentarismo/actividad, experiencia, objetivo y tiempo real para entrenar.':'Cambia aquí tu objetivo, disponibilidad, actividad o nivel de seguimiento cuando tu vida cambie.';if(!onboarding)populateProfileForm();}
   function setSection(nextSection){
     if(!profile&&nextSection!=='profile')nextSection='profile';if(section!=='profile')previousSection=section;section=nextSection;
     const panels={today:els.todayPanel,training:els.trainingPanel,progress:els.progressPanel,nutrition:els.nutritionPanel,profile:els.profilePanel};Object.entries(panels).forEach(([key,panel])=>{if(panel)panel.hidden=key!==section;});
@@ -559,7 +559,7 @@
   function saveProfileForm(event){
     event.preventDefault();const fd=new FormData(els.profileForm),age=num(fd.get('age')),height=num(fd.get('height')),weight=num(fd.get('weight'));if(!age||!height||!weight)return;
     const createdAt=profile?.createdAt||isoToday(),activeAudit=profile?.activeAudit||null;
-    profile={name:String(fd.get('name')||'').trim(),age,sex:String(fd.get('sex')||'skip'),height,weight,activity:String(fd.get('activity')||'light'),goal:String(fd.get('goal')||'maintain'),timeframe:Number(fd.get('timeframe'))||3,days:Number(fd.get('days'))||4,sessionMinutes:Number(fd.get('sessionMinutes'))||20,goalNote:String(fd.get('goalNote')||'').trim(),equipment:fd.getAll('equipment').map(String),lowImpact:fd.get('lowImpact')==='yes',nutritionMode:String(fd.get('nutritionMode')||'off'),createdAt,updatedAt:new Date().toISOString(),activeAudit};
+    profile={name:String(fd.get('name')||'').trim(),age,sex:String(fd.get('sex')||'skip'),height,weight,activity:String(fd.get('activity')||'light'),experience:String(fd.get('experience')||'beginner'),goal:String(fd.get('goal')||'maintain'),timeframe:Number(fd.get('timeframe'))||3,days:Number(fd.get('days'))||4,sessionMinutes:Number(fd.get('sessionMinutes'))||20,goalNote:String(fd.get('goalNote')||'').trim(),equipment:fd.getAll('equipment').map(String),lowImpact:fd.get('lowImpact')==='yes',nutritionMode:String(fd.get('nutritionMode')||'off'),createdAt,updatedAt:new Date().toISOString(),activeAudit};
     saveProfile();els.mainTabs.hidden=false;setSection('today');renderProgress();
   }
   function startAudit(){
