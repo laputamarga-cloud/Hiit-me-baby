@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.7.1';
+  const VERSION = '0.8.3';
 
   const STRENGTH = [
     {
@@ -323,14 +323,22 @@
     recentHistory: $('recentHistory'), exportBtn: $('exportBtn'), importBtn: $('importBtn'), importInput: $('importInput'), progressMessage: $('progressMessage'),
     nutritionModePill: $('nutritionModePill'), energyEstimate: $('energyEstimate'), nutritionGuidance: $('nutritionGuidance'),
     auditCard: $('auditCard'), auditStatus: $('auditStatus'), startAudit: $('startAuditBtn'), auditForm: $('auditForm'), auditDate: $('auditDate'), auditHistory: $('auditHistory'),
-    profileTitle: $('profileTitle'), profileIntro: $('profileIntro'), profileForm: $('profileForm'), profileCancel: $('profileCancelBtn'), profileMessage: $('profileMessage')
+    profileForm: $('profileForm'), profileMessage: $('profileMessage'), profileSummaryCard: $('profileSummaryCard'), redoOnboarding: $('redoOnboardingBtn'),
+    onboarding: $('onboardingScreen'), onboardingStepLabel: $('onboardingStepLabel'), onboardingProgressBar: $('onboardingProgressBar'), onboardingLead: $('onboardingLead'),
+    onboardingBack: $('onboardingBackBtn'), onboardingNext: $('onboardingNextBtn'), onboardingNav: $('onboardingNav'), onboardingResult: $('onboardingResult'),
+    onboardingResultContent: $('onboardingResultContent'), onboardingSave: $('onboardingSaveBtn'), onboardingAdjust: $('onboardingAdjustBtn'), onboardingCancel: $('onboardingCancelBtn')
   };
 
   const PROGRESS_KEY = 'hmb-progress-v1';
   const PROFILE_KEY = 'hmb-profile-v1';
+  const ONBOARDING_VERSION = 3;
   let progressData = loadProgress();
   let profile = loadProfile();
-  let section = profile ? 'today' : 'profile';
+  let onboardingRequired = !profile || Number(profile.onboardingVersion || 0) < ONBOARDING_VERSION;
+  let onboardingStep = 0;
+  let onboardingEditing = false;
+  let onboardingDraft = null;
+  let section = 'today';
   let previousSection = 'today';
   let mode = 'strength';
   let selectedIndex = 0;
@@ -431,63 +439,130 @@
   function currentWeight() { return num(latestMeasurementValue('weight')) ?? num(profile?.weight); }
 
   function goalLabel(goal) {
-    return ({lose_fat:'Perder grasa gradualmente',strength:'Ganar fuerza / músculo',endurance:'Mejorar resistencia',maintain:'Mantenerme y estar en forma',habit:'Crear hábito y constancia'})[goal] || 'Estar en forma';
+    return ({lose_fat:'Adelgazar',tone:'Tonificar / recomposición',strength:'Ganar músculo y fuerza',endurance:'Mejorar resistencia',maintain:'Mantenerme y estar en forma',habit:'Crear hábito y constancia'})[goal] || 'Estar en forma';
   }
   function nutritionModeLabel(value) { return ({off:'Pausada',orientation:'Orientación',audit:'Auditoría puntual'})[value] || 'Orientación'; }
-  function activityFactor(value) { return ({low:1.20,light:1.375,moderate:1.55,high:1.725})[value] || 1.375; }
+  function activityFactor(value) { return ({seated:1.20,breaks:1.30,standing:1.45,low:1.20,light:1.30,moderate:1.45,high:1.55})[value] || 1.30; }
   function round25(value) { return Math.round(value/25)*25; }
+  function bmiFor(weight,height){return weight&&height?weight/((height/100)**2):null;}
+  function bmiLabel(value){if(!value)return '—';if(value<18.5)return 'Bajo';if(value<25)return 'Saludable';if(value<30)return 'Elevado';return 'Alto';}
+  function bodyTypeLabel(value){return ({lean:'Delgado/a',average:'Intermedio',soft:'Grasa algo elevada',high:'Grasa claramente elevada'})[value]||'Sin definir';}
+  function desiredLookLabel(value){return ({leaner:'Más ligera/o y ágil',defined:'Más definida/o',athletic:'Más atlética/o y fuerte',feel:'Más sana/o y capaz'})[value]||'Sentirme mejor';}
+  function experienceLabel(value){return ({beginner:'Empezando o retomando',some:'Entreno ocasional',regular:'Entreno regular'})[value]||'Sin definir';}
+  function activityLabel(value){return ({seated:'Mayormente sentado/a',breaks:'Descansos activos',standing:'De pie / en movimiento',low:'Mayormente sentado/a',light:'Descansos activos',moderate:'De pie / en movimiento',high:'Muy activo/a'})[value]||'Sin definir';}
+  function deriveSchedule(hours){const h=Number(hours)||2;if(h<=1)return {days:2,sessionMinutes:20};if(h<=1.5)return {days:3,sessionMinutes:20};if(h<=2)return {days:4,sessionMinutes:20};return {days:5,sessionMinutes:25};}
 
-  function estimateEnergy() {
-    if (!profile || profile.sex === 'skip') return null;
-    const weight=currentWeight(), height=num(profile.height), age=num(profile.age);
+  function estimateEnergy(source=profile) {
+    if (!source || source.sex === 'skip' || source.energySafety === 'skip') return null;
+    const weight=source===profile?currentWeight():num(source.weight), height=num(source.height), age=num(source.age);
     if(!weight||!height||!age) return null;
-    const bmr=10*weight+6.25*height-5*age+(profile.sex==='male'?5:-161);
-    const tdee=bmr*activityFactor(profile.activity);
-    const maintenance=[round25(tdee*.95),round25(tdee*1.05)];
+    const bmr=10*weight+6.25*height-5*age+(source.sex==='male'?5:-161);
+    const base=bmr*activityFactor(source.activity);
+    const weeklyHours=Number(source.weeklyHours)||0;
+    const plannedExerciseDaily=(weeklyHours*60*5*3.5*weight/200)/7;
+    const tdee=base+plannedExerciseDaily;
+    const maintenance=[round25(tdee*.96),round25(tdee*1.04)];
+    const bmi=bmiFor(weight,height);
     let target=[...maintenance];
-    let note='Rango inicial: compáralo con varias semanas de tendencia antes de tocar nada.';
-    if(profile.goal==='lose_fat'){
-      target=[round25(tdee*.90),round25(tdee*.95)];
-      const floor=profile.sex==='male'?1500:1200;
-      if(target[1]<floor){target=null;note='La estimación quedaría demasiado baja para usarla como objetivo automático. Mejor individualizarla con un profesional.';}
-      else if(target[0]<floor) target[0]=floor;
-    }else if(profile.goal==='strength'){
-      note='Para fuerza no hace falta “comer de más” por sistema: empezamos cerca de mantenimiento y miramos rendimiento y tendencia.';
+    let note=`Estimación: metabolismo basal + actividad cotidiana + unas ${weeklyHours||0} h/sem de entrenamiento. Se revisa con tu tendencia real.`;
+    const safety=source.energySafety||'none';
+    if(safety!=='none'){
+      target=null;
+      note='Por la situación indicada no voy a generar un objetivo calórico automático. El plan de entrenamiento y el seguimiento siguen disponibles.';
+    }else if((source.goal==='lose_fat'||source.goal==='tone')&&bmi&&bmi<18.5){
+      target=null;
+      note='Con un IMC por debajo del rango habitual no voy a recomendar un déficit automático. Priorizaría valoración profesional y rendimiento.';
+    }else if(source.goal==='lose_fat'){
+      const targetBmi=num(source.targetWeight)?bmiFor(num(source.targetWeight),height):null;
+      target=targetBmi&&targetBmi<20?[round25(tdee*.90),round25(tdee*.95)]:[round25(tdee*.85),round25(tdee*.90)];
+      if(targetBmi&&targetBmi<20)note+=' Tu meta está cerca del extremo bajo del rango habitual, así que no voy a proponer un recorte agresivo.';
+    }else if(source.goal==='tone'){
+      target=bmi&&bmi<20?[round25(tdee*.98),round25(tdee*1.02)]:[round25(tdee*.93),round25(tdee*.98)];
+    }else if(source.goal==='strength'){
+      target=[round25(tdee),round25(tdee*1.05)];
     }
-    const pf=['lose_fat','strength'].includes(profile.goal)?[1.6,2.0]:[1.2,1.6];
-    return {bmr:round25(bmr),maintenance,target,protein:[Math.round(weight*pf[0]),Math.round(weight*pf[1])],note,weight};
+    if(target){
+      const floor=source.sex==='male'?1500:1200;
+      if(target[1]<floor){target=null;note='El cálculo quedaría demasiado bajo para usarlo como objetivo automático. Prefiero no darte una cifra engañosamente precisa.';}
+      else if(target[0]<floor)target[0]=floor;
+    }
+    const protein=[Math.round(weight*1.6),Math.round(weight*2.0)];
+    return {bmr:round25(bmr),maintenance,target,protein,note,weight,tdee:round25(tdee),bmi};
   }
 
-  function buildWeeklyPlan() {
-    if(!profile) return [];
+  function buildWeeklyPlan(source=profile) {
+    if(!source) return [];
     const e=(modeName,routine)=>({mode:modeName,routine});
     const plans={
       lose_fat:[e('strength','Full Body A'),e('bike','BICI 20 · Base'),e('strength','Full Body B'),e('bike','BICI 20 · Intervalos'),e('strength','Upper Body')],
-      strength:[e('strength','Full Body A'),e('strength','Upper Body'),e('strength','Full Body B'),e('strength','Glúteo + posterior'),e('strength','Push Power')],
+      tone:[e('strength','Full Body A'),e('strength','Glúteo + posterior'),e('bike','BICI 20 · Base'),e('strength','Upper Body'),e('bike','BICI 20 · Intervalos')],
+      strength:[e('strength','Full Body A'),e('strength','Upper Body'),e('strength','Full Body B'),e('strength','Glúteo + posterior'),e('bike','BICI 20 · Base')],
       endurance:[e('bike','BICI 20 · Base'),e('strength','Full Body A'),e('bike','BICI 20 · Intervalos'),e('strength','Core HIIT'),e('bike','BICI 30 · Fondo')],
       maintain:[e('strength','Full Body A'),e('bike','BICI 20 · Base'),e('strength','Full Body B'),e('strength','Core HIIT'),e('bike','BICI 20 · Intervalos')],
       habit:[e('strength','Exprés 6'),e('bike','BICI 12 · No negociable'),e('strength','Full Body A'),e('strength','Core HIIT'),e('bike','BICI 20 · Base')]
     };
-    let out=[...(plans[profile.goal]||plans.maintain)];
-    const equipment=Array.isArray(profile.equipment)?profile.equipment:[];
-    if(!equipment.includes('bike')){
-      const replacements=['Core HIIT','Upper Body','Glúteo + posterior'];let r=0;
-      out=out.map((item)=>item.mode==='bike'?e('strength',replacements[(r++)%replacements.length]):item);
-    }
-    const minutes=Number(profile.sessionMinutes)||20;
-    if(minutes<=12) out=out.map((item)=>item.mode==='strength'?e('strength','Exprés 6'):e('bike','BICI 12 · No negociable'));
-    else if(minutes>=25&&equipment.includes('dumbbells')&&['lose_fat','strength','maintain'].includes(profile.goal)&&profile.experience!=='beginner'){
+    let out=[...(plans[source.goal]||plans.tone)];
+    const equipment=Array.isArray(source.equipment)?source.equipment:[];
+    if(!equipment.includes('bike')){const replacements=['Core HIIT','Upper Body','Glúteo + posterior'];let r=0;out=out.map((item)=>item.mode==='bike'?e('strength',replacements[(r++)%replacements.length]):item);}
+    const minutes=Number(source.sessionMinutes)||20;
+    if(minutes<=12)out=out.map((item)=>item.mode==='strength'?e('strength','Exprés 6'):e('bike','BICI 12 · No negociable'));
+    else if(minutes>=25&&equipment.includes('dumbbells')&&['lose_fat','tone','strength','maintain'].includes(source.goal)&&source.experience!=='beginner'){
       const first=out.findIndex((item)=>item.mode==='strength');if(first>=0)out[first]=e('strength','Full Body · Completa');
     }
-    if(!equipment.includes('dumbbells')) out=out.map((item)=>item.mode==='strength'?e('strength','Core HIIT'):item);
-    return out.slice(0,Math.max(2,Math.min(5,Number(profile.days)||4)));
+    if(!equipment.includes('dumbbells'))out=out.map((item)=>item.mode==='strength'?e('strength','Core HIIT'):item);
+    return out.slice(0,Math.max(2,Math.min(5,Number(source.days)||4)));
   }
 
   function weekStartDate(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d;}
   function workoutsThisWeek(){const start=weekStartDate();return progressData.workouts.filter((w)=>parseLocalDate(w.date)>=start).sort((a,b)=>String(a.timestamp||a.date).localeCompare(String(b.timestamp||b.date)));}
   function nextPlanRecommendation(){const plan=buildWeeklyPlan(),done=Math.min(workoutsThisWeek().length,plan.length);return {plan,done,item:done<plan.length?plan[done]:null};}
-  function horizonDate(){if(!profile)return null;const d=parseLocalDate(profile.createdAt||isoToday());d.setMonth(d.getMonth()+(Number(profile.timeframe)||3));return d;}
+  function horizonDate(){if(!profile)return null;const d=parseLocalDate(profile.goalStartedAt||profile.createdAt||isoToday());d.setMonth(d.getMonth()+(Number(profile.timeframe)||3));return d;}
   function nextReviewDate(){if(!profile)return null;const start=parseLocalDate(profile.createdAt||isoToday()),now=new Date();now.setHours(12,0,0,0);let r=new Date(start);while(r<=now)r.setDate(r.getDate()+28);return r;}
+
+  function daysSinceLastWorkout(){
+    if(!progressData.workouts.length)return null;
+    const last=progressData.workouts.slice().sort((a,b)=>String(b.timestamp||b.date).localeCompare(String(a.timestamp||a.date)))[0];
+    return Math.max(0,Math.floor((new Date()-parseLocalDate(last.date))/86400000));
+  }
+  function todayCoachCopy(rec){
+    if(!rec.item)return `Bien. ${rec.plan.length}/${rec.plan.length}. Sin confeti: has hecho lo que dijiste que ibas a hacer. La semana que viene, repetimos.`;
+    if(rec.item.routine==='BICI 12 · No negociable')return 'Doce minutos. No me vendas que no los tienes.';
+    const gap=daysSinceLastWorkout();
+    if(gap!==null&&gap>=3&&rec.done===0)return `Llevas ${gap} días sin registrar un entrenamiento. No es una tragedia. Convertirlo en ${gap+1} ya empieza a parecer una decisión. Hoy toca esto.`;
+    if(rec.done===0)return 'No necesitas motivación. Necesitas darle a EMPEZAR.';
+    if(rec.done===rec.plan.length-1)return `Llevas ${rec.done}/${rec.plan.length}. Te queda una. No conviertas el último paso en una negociación.`;
+    return `Llevas ${rec.done}/${rec.plan.length}. Bien. Haz la siguiente y seguimos; no hace falta montar una película.`;
+  }
+
+  function objectiveSnapshot(source=profile) {
+    if(!source) return null;
+    const startWeight=num(source.weight), nowWeight=source===profile?(currentWeight()||startWeight):startWeight, targetWeight=num(source.targetWeight);
+    const startWaist=num(source.waist), latestWaist=source===profile?num(latestMeasurementValue('waist')):null, nowWaist=latestWaist??startWaist, targetWaist=num(source.targetWaist);
+    const horizon=source===profile?horizonDate():(()=>{const d=new Date();d.setMonth(d.getMonth()+(Number(source.timeframe)||6));return d;})();
+    const weightDirection=targetWeight&&startWeight?Math.sign(targetWeight-startWeight):0;
+    let weightProgress=null, weightRemaining=null;
+    if(targetWeight&&startWeight&&nowWeight){
+      const total=Math.abs(targetWeight-startWeight), done=weightDirection<0?startWeight-nowWeight:nowWeight-startWeight;
+      weightProgress=total>0?Math.max(0,Math.min(100,(done/total)*100)):100;
+      weightRemaining=Math.max(0,Math.abs(targetWeight-nowWeight));
+    }
+    let waistProgress=null, waistRemaining=null;
+    if(targetWaist&&startWaist&&nowWaist){
+      const total=Math.abs(targetWaist-startWaist), dir=Math.sign(targetWaist-startWaist), done=dir<0?startWaist-nowWaist:nowWaist-startWaist;
+      waistProgress=total>0?Math.max(0,Math.min(100,(done/total)*100)):100;
+      waistRemaining=Math.max(0,Math.abs(targetWaist-nowWaist));
+    }
+    const primary=targetWeight?{kind:'weight',label:'Peso',start:startWeight,now:nowWeight,target:targetWeight,unit:'kg',progress:weightProgress,remaining:weightRemaining}:
+      targetWaist?{kind:'waist',label:'Cintura',start:startWaist,now:nowWaist,target:targetWaist,unit:'cm',progress:waistProgress,remaining:waistRemaining}:null;
+    return {primary,targetWeight,targetWaist,startWeight,nowWeight,startWaist,nowWaist,horizon};
+  }
+  function objectiveSummary(source=profile){
+    const snap=objectiveSnapshot(source);if(!snap)return 'Sin objetivo configurado';
+    if(snap.primary){const p=snap.primary;return `${p.now??'—'} → ${p.target} ${p.unit}${p.remaining!==null?` · faltan ${p.remaining.toFixed(1)} ${p.unit}`:''}`;}
+    if(source.goal==='strength')return 'Ganar fuerza · medir rendimiento cada 4 semanas';
+    if(source.goal==='tone')return 'Recomposición · cintura, rendimiento y constancia';
+    return `${goalLabel(source.goal)} · sin cifra corporal fija`;
+  }
 
   function renderToday(){
     if(!profile)return;
@@ -497,32 +572,35 @@
     els.todayHorizon.textContent=`${profile.timeframe} meses · hasta ${new Intl.DateTimeFormat('es-ES',{month:'short',year:'numeric'}).format(horizon)}`;
     const week=workoutsThisWeek(),strength=sumMinutes(week,'strength'),bike=sumMinutes(week,'bike');
     const safeNote=String(profile.goalNote||'').replace(/[<>]/g,'');
-    els.todayPlanSummary.innerHTML=`<p class="eyebrow">PLAN ACTUAL</p><h3>${goalLabel(profile.goal)}</h3><p>${profile.days} días/semana · sesiones de ≈ ${profile.sessionMinutes} min${safeNote?` · ${safeNote}`:''}</p><div class="hero-stats"><div class="hero-stat"><strong>${week.length}/${profile.days}</strong><span>sesiones esta semana</span></div><div class="hero-stat"><strong>${strength}m</strong><span>fuerza</span></div><div class="hero-stat"><strong>${bike}m</strong><span>bici</span></div></div>`;
+    const objective=objectiveSnapshot();
+    const objectiveText=objectiveSummary();
+    els.todayPlanSummary.innerHTML=`<p class="eyebrow">TU OBJETIVO</p><h3>${goalLabel(profile.goal)}</h3><p><strong>${objectiveText}</strong> · horizonte ${new Intl.DateTimeFormat('es-ES',{month:'short',year:'numeric'}).format(objective.horizon)}</p><p>${profile.days} días/semana · ≈ ${profile.weeklyHours||'?'} h/sem · sesiones de ≈ ${profile.sessionMinutes} min${safeNote?` · ${safeNote}`:''}</p><div class="hero-stats"><div class="hero-stat"><strong>${week.length}/${profile.days}</strong><span>sesiones esta semana</span></div><div class="hero-stat"><strong>${objective?.primary?.progress!==null?`${Math.round(objective.primary.progress)}%`:'4 sem'}</strong><span>${objective?.primary?'avance hacia meta':'próxima revisión'}</span></div><div class="hero-stat"><strong>${strength+bike}m</strong><span>entrenamiento</span></div></div>`;
     const rec=nextPlanRecommendation();currentRecommendation=rec.item;
-    if(rec.item){const icon=rec.item.mode==='bike'?'🚲':'🔥';els.todayRecommendation.innerHTML=`<h3>${icon} ${rec.item.routine}</h3><p>Llevas ${rec.done} de ${rec.plan.length} sesiones previstas. Esta es la siguiente pieza del plan; si hoy no encaja, puedes elegir otra rutina sin drama.</p>`;els.openRecommendation.hidden=false;}
-    else{els.todayRecommendation.innerHTML=`<h3>✅ Semana hecha</h3><p>Ya has alcanzado las ${rec.plan.length} sesiones previstas. Si te apetece hacer algo más, que sea opcional: paseo, movilidad o una bici suave.</p>`;els.openRecommendation.hidden=true;}
+    if(rec.item){const icon=rec.item.mode==='bike'?'🚲':'🔥';els.todayRecommendation.innerHTML=`<h3>${icon} ${rec.item.routine}</h3><p>${todayCoachCopy(rec)}</p>`;els.openRecommendation.hidden=false;}
+    else{els.todayRecommendation.innerHTML=`<h3>✅ Semana hecha</h3><p>${todayCoachCopy(rec)}</p><small>Si haces algo más, que sea porque te apetece: paseo, movilidad o bici suave. No vamos a convertir cumplir el plan en otra obligación.</small>`;els.openRecommendation.hidden=true;}
     els.todayWeekPlan.innerHTML=rec.plan.map((item,index)=>{const done=index<rec.done;return `<div class="plan-item${done?' done':''}"><span class="plan-index">${index+1}</span><div><strong>${item.mode==='bike'?'🚲':'🔥'} ${item.routine}</strong><span>${item.mode==='bike'?'Cardio guiado':'Fuerza guiada'}</span></div><em>${done?'✓':'·'}</em></div>`;}).join('');
     const energy=estimateEnergy();
-    if(profile.nutritionMode==='off')els.todayNutritionSummary.innerHTML='<p class="muted">Seguimiento pausado. La app no te va a pedir comidas ni calorías. Puedes activarlo cuando te interese desde PERFIL.</p>';
+    if(profile.nutritionMode==='off')els.todayNutritionSummary.innerHTML='<p class="muted">Seguimiento pausado. Perfecto: no vas a convertir cada plato en una hoja de Excel. Si algún día quieres datos, lo activas desde PERFIL.</p>';
     else if(energy){const target=energy.target?`${energy.target[0]}–${energy.target[1]} kcal`:'Sin objetivo automático';els.todayNutritionSummary.innerHTML=`<div class="nutrition-kpis"><div><strong>${target}</strong><span>rango orientativo</span></div><div><strong>${energy.protein[0]}–${energy.protein[1]} g</strong><span>proteína orientativa</span></div><div><strong>${nutritionModeLabel(profile.nutritionMode)}</strong><span>seguimiento</span></div></div>`;}
     else els.todayNutritionSummary.innerHTML='<p class="muted">Has elegido no calcular calorías. El módulo puede seguir sirviendo para auditorías puntuales y sensaciones.</p>';
     const review=nextReviewDate(),days=Math.max(0,Math.ceil((review-new Date())/86400000));
-    els.todayReview.innerHTML=`<strong>🔎 Próxima revisión del plan</strong><p>${new Intl.DateTimeFormat('es-ES',{weekday:'long',day:'numeric',month:'long'}).format(review)} · en ${days} día${days===1?'':'s'}.</p><small>Las recomendaciones se revisan con varias semanas de entrenamiento y tendencia; no por un peso suelto ni un día raro.</small>`;
+    els.todayReview.innerHTML=`<strong>🔎 Próxima revisión del plan</strong><p>${new Intl.DateTimeFormat('es-ES',{weekday:'long',day:'numeric',month:'long'}).format(review)} · en ${days} día${days===1?'':'s'}.</p><small>Revisamos semanas, no numeritos con complejo de protagonista. Un peso suelto no manda aquí.</small>`;
   }
 
   function nutritionTrendGuidance(){
     if(!profile)return '';
     const last28=progressData.workouts.filter((x)=>inRange(x.date,daysAgo(27))),expected=Math.max(1,(Number(profile.days)||4)*4),adherence=last28.length/expected;
-    if(last28.length<Math.max(2,Number(profile.days)||4))return 'Todavía hay pocos datos. Primero crea una referencia de varias semanas; no tocaría calorías por una medición aislada.';
+    if(last28.length<Math.max(2,Number(profile.days)||4))return 'Todavía hay pocos datos. Con dos numeritos no hacemos ciencia. Primero varias semanas; luego hablamos de tocar calorías.';
     if(profile.goal==='lose_fat'){
       const wn=recentAverage('waist',28,0),wp=recentAverage('waist',56,28),kn=recentAverage('weight',28,0),kp=recentAverage('weight',56,28);
       const moving=(wn!==null&&wp!==null&&wn<wp-.2)||(kn!==null&&kp!==null&&kn<kp-.2);
-      if(moving)return 'La tendencia va en la dirección prevista. No veo motivo para recortar más: mantén el plan y sigue mirando semanas, no días.';
-      if(adherence<.65)return 'El progreso está estable y todavía cuesta llegar al plan de entrenamiento. Antes de tocar comida, intentaría acercarme a la constancia prevista.';
-      return 'La tendencia está bastante estable y el entrenamiento va razonablemente bien. Como no registras comidas a diario, una auditoría de 5 días puede dar información antes de cambiar el rango energético.';
+      if(moving)return 'La tendencia va donde queríamos. No toques nada por impaciencia: recortar más porque sí sería buscar problemas donde no los hay.';
+      if(adherence<.65)return 'Antes de recortar comida, cumple el entrenamiento que ya habíamos pactado. No vamos a arreglar con hambre lo que todavía es un problema de constancia.';
+      return 'La tendencia está estable y el entrenamiento va bien. Antes de tocar calorías a ciegas, haz una auditoría de 5 días. Adivinar no cuenta como método.';
     }
-    if(profile.goal==='strength')return adherence>=.65?'La prioridad es que el rendimiento y la recuperación avancen. Si entrenas con constancia y cada vez toleras mejor las sesiones, no hace falta perseguir un número de calorías perfecto.':'Primero consolidaría la frecuencia de entrenamiento; después tiene más sentido afinar alimentación.';
-    return adherence>=.65?'Vas acumulando entrenamiento suficiente para evaluar tendencias. Mantén el plan salvo que hambre, energía o rendimiento indiquen otra cosa.':'Aún no tocaría la alimentación: primero necesitamos una base más estable de entrenamiento.';
+    if(profile.goal==='tone')return adherence>=.65?'En recomposición manda el conjunto: cintura, rendimiento y constancia. Si mejoran, que la báscula se haga la interesante todo lo que quiera.':'Primero cumple con el entrenamiento. Afinar la comida antes de tener constancia es ponerle alerón a un coche sin ruedas.';
+    if(profile.goal==='strength')return adherence>=.65?'Aquí manda rendir y recuperar mejor. Si eso avanza, deja de perseguir la caloría perfecta como si te debiera dinero.':'Primero cumple con el entrenamiento. Afinar la comida antes de tener constancia es ponerle alerón a un coche sin ruedas.';
+    return adherence>=.65?'Ya hay datos para mirar tendencias. Si hambre, energía y rendimiento están bien, no toques cosas solo por aburrimiento.':'Todavía no tocaría la alimentación. Primero una base de entrenamiento decente; luego ya jugamos a afinar.';
   }
 
   function auditEntries(auditId){return progressData.nutrition.filter((x)=>x.auditId===auditId).sort((a,b)=>String(a.date).localeCompare(String(b.date)));}
@@ -544,23 +622,111 @@
     els.nutritionGuidance.innerHTML=`<strong>🧭 ¿Lo estás haciendo bien?</strong><p>${nutritionTrendGuidance()}</p><small>La app no puede atribuir un cambio a la comida si no tiene datos suficientes. Si hace falta información, propone una auditoría en lugar de inventarse la causa.</small>`;renderAudit();
   }
 
-  function populateProfileForm(){
+  function mapLegacyActivity(value){return ({low:'seated',light:'breaks',moderate:'standing',high:'standing'})[value]||value||'seated';}
+  function prefillOnboarding(){
     if(!profile)return;const f=els.profileForm.elements;
-    ['name','age','sex','height','weight','activity','experience','goal','timeframe','days','sessionMinutes','goalNote','nutritionMode'].forEach((key)=>{if(f[key])f[key].value=profile[key]??'';});
+    const setRadio=(name,value)=>{const input=els.profileForm.querySelector(`input[name="${name}"][value="${value}"]`);if(input)input.checked=true;};
+    ['sex','goal','bodyType','desiredLook','activity','experience','weeklyHours','timeframe','nutritionMode'].forEach((key)=>{let value=profile[key];if(key==='activity')value=mapLegacyActivity(value);if(value!==undefined&&value!==null)setRadio(key,String(value));});
+    ['age','height','weight','waist','targetWeight','targetWaist','eventDate','energySafety'].forEach((key)=>{if(f[key])f[key].value=profile[key]??(key==='energySafety'?'none':'');});
     const eq=Array.isArray(profile.equipment)?profile.equipment:[];els.profileForm.querySelectorAll('input[name="equipment"]').forEach((box)=>{box.checked=eq.includes(box.value);});if(f.lowImpact)f.lowImpact.checked=profile.lowImpact!==false;
   }
-  function renderProfile(){const onboarding=!profile;els.mainTabs.hidden=onboarding;els.profileCancel.hidden=onboarding;els.profileTitle.textContent=onboarding?'Vamos a situarnos':'Tu plan y objetivos';els.profileIntro.textContent=onboarding?'Primero situamos tu punto de partida: edad, sexo para el cálculo energético, sedentarismo/actividad, experiencia, objetivo y tiempo real para entrenar.':'Cambia aquí tu objetivo, disponibilidad, actividad o nivel de seguimiento cuando tu vida cambie.';if(!onboarding)populateProfileForm();}
+  function setOnboardingStep(next){
+    const steps=[...els.profileForm.querySelectorAll('[data-onboarding-step]')];onboardingStep=Math.max(0,Math.min(steps.length-1,next));
+    steps.forEach((s,i)=>s.hidden=i!==onboardingStep);els.onboardingStepLabel.textContent=`${onboardingStep+1} / ${steps.length}`;els.onboardingProgressBar.style.width=`${((onboardingStep+1)/steps.length)*100}%`;
+    els.onboardingBack.disabled=onboardingStep===0;els.onboardingNext.textContent=onboardingStep===steps.length-1?'VER MI PLAN':'SIGUIENTE';window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function validateOnboardingStep(){const step=els.profileForm.querySelector(`[data-onboarding-step="${onboardingStep}"]`);if(!step)return true;const required=[...step.querySelectorAll('[required]')];for(const input of required){if(!input.checkValidity()){input.reportValidity();return false;}}return true;}
+  function collectOnboardingDraft(){
+    const fd=new FormData(els.profileForm),age=num(fd.get('age')),height=num(fd.get('height')),weight=num(fd.get('weight')),weeklyHours=num(fd.get('weeklyHours'))||2;
+    if(!age||!height||!weight)return null;const schedule=deriveSchedule(weeklyHours);
+    return {name:profile?.name||'',age,sex:String(fd.get('sex')||'skip'),height,weight,waist:num(fd.get('waist')),activity:String(fd.get('activity')||'seated'),experience:String(fd.get('experience')||'beginner'),bodyType:String(fd.get('bodyType')||'average'),desiredLook:String(fd.get('desiredLook')||'feel'),goal:String(fd.get('goal')||'tone'),timeframe:Number(fd.get('timeframe'))||6,targetWeight:num(fd.get('targetWeight')),targetWaist:num(fd.get('targetWaist')),eventDate:String(fd.get('eventDate')||''),weeklyHours,days:schedule.days,sessionMinutes:schedule.sessionMinutes,equipment:fd.getAll('equipment').map(String),lowImpact:fd.get('lowImpact')==='yes',nutritionMode:String(fd.get('nutritionMode')||'off'),energySafety:String(fd.get('energySafety')||'none'),createdAt:profile?.createdAt||isoToday(),goalStartedAt:isoToday(),activeAudit:profile?.activeAudit||null,onboardingVersion:ONBOARDING_VERSION};
+  }
+  function projectionFor(source){
+    const w=num(source.weight),h=num(source.height),target=num(source.targetWeight);if(!w||!h||!target||target>=w||!['lose_fat','tone'].includes(source.goal))return null;
+    const targetBmi=bmiFor(target,h);if(targetBmi<18.5)return {unsafe:true,targetBmi};
+    const delta=w-target,fast=Math.max(.1,w*.005),slow=Math.max(.1,w*.0025),minWeeks=Math.ceil(delta/fast),maxWeeks=Math.ceil(delta/slow),a=new Date(),b=new Date();a.setDate(a.getDate()+minWeeks*7);b.setDate(b.getDate()+maxWeeks*7);return {unsafe:false,minWeeks,maxWeeks,from:a,to:b,targetBmi};
+  }
+  function formatMonthYear(d){return new Intl.DateTimeFormat('es-ES',{month:'short',year:'numeric'}).format(d);}
+  function validateGoalRealism(source){
+    const weight=num(source.weight),height=num(source.height),target=num(source.targetWeight),targetWaist=num(source.targetWaist),currentWaist=num(source.waist);
+    if(!weight||!height)return {ok:true};
+    if(targetWaist&&currentWaist&&['lose_fat','tone'].includes(source.goal)&&targetWaist>=currentWaist){
+      return {ok:false,message:`Has puesto ${source.targetWaist} cm como cintura objetivo, pero partes de ${source.waist} cm. Si quieres reducir cintura, la meta tiene que ser menor; si no, déjala vacía.`};
+    }
+    if(!target)return {ok:true};
+    if(source.goal==='lose_fat'&&target>=weight){
+      return {ok:false,message:`No. Has puesto ${source.targetWeight} kg como objetivo, pero ahora indicas ${source.weight} kg y has elegido adelgazar. Esas dos cosas no cuadran. Corrige el peso objetivo o déjalo vacío.`};
+    }
+    if(source.goal==='strength'&&target<=weight){
+      return {ok:false,message:`No me cuadra: has elegido ganar músculo y fuerza, pero tu peso objetivo (${source.targetWeight} kg) no está por encima de tu peso actual (${source.weight} kg). Cambia la cifra o déjala vacía y seguiremos rendimiento.`};
+    }
+    if(['lose_fat','tone'].includes(source.goal)&&target<weight){
+      const targetBmi=bmiFor(target,height);
+      if(targetBmi<18.5){
+        const minWeight=Math.ceil((18.5*((height/100)**2))*10)/10;
+        return {ok:false,message:`No. ${source.targetWeight} kg no entra como objetivo automático: para ${source.height} cm quedaría por debajo del cortafuegos de IMC 18,5. El mínimo de referencia sería ≈ ${minWeight} kg. Si tu intención es otra, esto ya no lo decide una app.`};
+      }
+      const weeks=Math.max(1,Number(source.timeframe||3)*4.345);
+      const weeklyLoss=(weight-target)/weeks;
+      const maxWeeklyLoss=weight*.01;
+      if(weeklyLoss>maxWeeklyLoss){
+        const minMonths=Math.ceil(((weight-target)/maxWeeklyLoss)/4.345);
+        return {ok:false,message:`No. Para llegar ahí en ${source.timeframe} meses tendrías que perder ≈ ${weeklyLoss.toFixed(2)} kg/semana, más del 1 % de tu peso por semana. Eso se pasa de frenada. Amplía el plazo a unos ${Math.max(minMonths,1)} meses o cambia la meta.`};
+      }
+    }
+    if(source.goal==='strength'&&target>weight){
+      const weeks=Math.max(1,Number(source.timeframe||3)*4.345),weeklyGain=(target-weight)/weeks,maxWeeklyGain=weight*.005;
+      if(weeklyGain>maxWeeklyGain){
+        const minMonths=Math.ceil(((target-weight)/maxWeeklyGain)/4.345);
+        return {ok:false,message:`No. Subir de ${source.weight} a ${source.targetWeight} kg en ${source.timeframe} meses exigiría ≈ ${weeklyGain.toFixed(2)} kg/semana. Para una meta de músculo eso va demasiado rápido para tratarlo como ganancia limpia. Amplía el plazo a unos ${Math.max(minMonths,1)} meses o deja el peso sin cifra y mide rendimiento.`};
+      }
+    }
+    return {ok:true};
+  }
+  function renderOnboardingResult(){
+    const draft=collectOnboardingDraft();if(!draft)return;
+    const realism=validateGoalRealism(draft);
+    if(!realism.ok){
+      const targetInput=realism.message.includes('cintura')?els.profileForm.elements.targetWaist:els.profileForm.elements.targetWeight;
+      if(targetInput){targetInput.setCustomValidity(realism.message);}
+      setOnboardingStep(9);
+      if(targetInput){targetInput.reportValidity();setTimeout(()=>targetInput.setCustomValidity(''),50);}
+      els.onboardingLead.textContent='No. Esa meta se pasa de frenada. Cambia el peso o el plazo: no voy a convertir una mala idea en un plan con botones bonitos.';
+      return;
+    }
+    onboardingDraft=draft;els.profileForm.hidden=true;els.onboardingNav.hidden=true;els.onboardingResult.hidden=false;els.onboardingStepLabel.textContent='TU PLAN';els.onboardingProgressBar.style.width='100%';els.onboardingLead.textContent='Vale. Con esto sí puedo trabajar. Sin gurús, sin fechas mágicas y sin hacer trampas con los números.';
+    const bmi=bmiFor(draft.weight,draft.height),energy=estimateEnergy(draft),plan=buildWeeklyPlan(draft),projection=projectionFor(draft),horizon=new Date();horizon.setMonth(horizon.getMonth()+draft.timeframe);
+    let projectionText=`Horizonte elegido: ${draft.timeframe} meses · hasta ${formatMonthYear(horizon)}. Primera revisión real en 4 semanas.`;
+    if(projection?.unsafe)projectionText=`El peso objetivo indicado implicaría un IMC de ${projection.targetBmi.toFixed(1)}. No voy a convertirlo en una fecha ni en un déficit automático.`;
+    else if(projection){
+      const horizonWeeks=Math.max(1,Math.round(draft.timeframe*4.345));
+      if(horizonWeeks<projection.minWeeks)projectionText=`Tu objetivo es ${draft.targetWeight} kg. El plazo de ${draft.timeframe} meses parece más rápido de lo que usaría como referencia prudente; un ritmo gradual apunta aproximadamente a ${projection.minWeeks}–${projection.maxWeeks} semanas (${formatMonthYear(projection.from)}–${formatMonthYear(projection.to)}).`;
+      else if(horizonWeeks<=projection.maxWeeks)projectionText=`Tu objetivo es ${draft.targetWeight} kg. El horizonte de ${draft.timeframe} meses entra dentro de una referencia gradual aproximada de ${projection.minWeeks}–${projection.maxWeeks} semanas. No es una fecha garantizada.`;
+      else projectionText=`Tu objetivo es ${draft.targetWeight} kg. No hace falta acelerar para llenar todo el plazo: una referencia gradual sería de ${projection.minWeeks}–${projection.maxWeeks} semanas (${formatMonthYear(projection.from)}–${formatMonthYear(projection.to)}).`;
+    }
+    const eventText=draft.eventDate?`<p class="result-event">📅 Tu fecha de referencia es ${formatDate(draft.eventDate)}. La tratamos como checkpoint, no como ultimátum.</p>`:'';
+    const energyHtml=energy?`<div class="result-energy"><div><span>Metabolismo basal</span><strong>≈ ${energy.bmr} kcal</strong></div><div><span>Mantenimiento</span><strong>${energy.maintenance[0]}–${energy.maintenance[1]} kcal</strong></div><div><span>Objetivo inicial</span><strong>${energy.target?`${energy.target[0]}–${energy.target[1]} kcal`:'Sin objetivo automático'}</strong></div><div><span>Proteína orientativa</span><strong>${energy.protein[0]}–${energy.protein[1]} g</strong></div></div><p class="tiny-note">${energy.note}</p>`:'<p class="muted">Has elegido no usar una estimación energética automática. El entrenamiento y el seguimiento funcionan igual.</p>';
+    const planHtml=plan.map((x,i)=>`<div class="plan-item"><span class="plan-index">${i+1}</span><div><strong>${x.mode==='bike'?'🚲':'🔥'} ${x.routine}</strong><span>${x.mode==='bike'?'Cardio guiado':'Fuerza guiada'}</span></div><em>·</em></div>`).join('');
+    const targetY=projection&&!projection.unsafe?70:78;
+    const draftObjective=objectiveSnapshot(draft), objectiveLine=objectiveSummary(draft);
+    els.onboardingResultContent.innerHTML=`<section class="result-hero"><p class="eyebrow">TU PUNTO DE PARTIDA</p><h3>${goalLabel(draft.goal)}</h3><p>${desiredLookLabel(draft.desiredLook)} · ${draft.weeklyHours} h/semana disponibles</p></section>
+      <section class="result-card objective-card"><p class="eyebrow">TU OBJETIVO</p><h3>${objectiveLine}</h3><div class="result-facts"><div><span>Resultado</span><strong>${draftObjective.primary?`${draftObjective.primary.target} ${draftObjective.primary.unit}`:'Sin cifra corporal fija'}</strong></div><div><span>Plazo</span><strong>${draft.timeframe} meses</strong></div><div><span>Proceso</span><strong>${draft.days} sesiones/semana</strong></div><div><span>Primera revisión</span><strong>4 semanas</strong></div></div><p class="tiny-note">La meta dice adónde vas. El proceso dice qué haces esta semana. Si los datos reales no acompañan, ajustamos el plan; no fingimos que una fecha manda sobre tu cuerpo.</p></section>
+      <section class="result-card"><div class="bmi-title"><div><p class="eyebrow">REFERENCIA CORPORAL</p><h3>IMC ${bmi.toFixed(1)} · ${bmiLabel(bmi)}</h3></div></div><div class="bmi-meter"><span style="left:${Math.max(3,Math.min(97,((bmi-15)/25)*100))}%"></span></div><div class="bmi-scale"><small>Bajo</small><small>Saludable</small><small>Elevado</small><small>Alto</small></div><p class="tiny-note">El IMC es una referencia aproximada: no distingue músculo de grasa y no decide por sí solo tu objetivo.</p></section>
+      <section class="result-card"><div class="result-facts"><div><span>Edad</span><strong>${draft.age}</strong></div><div><span>Peso</span><strong>${draft.weight} kg</strong></div><div><span>Altura</span><strong>${draft.height} cm</strong></div><div><span>Cintura</span><strong>${draft.waist?`${draft.waist} cm`:'—'}</strong></div><div><span>Punto de partida</span><strong>${bodyTypeLabel(draft.bodyType)}</strong></div><div><span>Vida diaria</span><strong>${activityLabel(draft.activity)}</strong></div><div><span>Experiencia</span><strong>${experienceLabel(draft.experience)}</strong></div><div><span>Tiempo</span><strong>${draft.weeklyHours} h/sem</strong></div><div><span>Peso objetivo</span><strong>${draft.targetWeight?`${draft.targetWeight} kg`:'—'}</strong></div><div><span>Cintura objetivo</span><strong>${draft.targetWaist?`${draft.targetWaist} cm`:'—'}</strong></div></div></section>
+      <section class="result-card"><p class="eyebrow">ORIENTACIÓN ENERGÉTICA</p><h3>De dónde salen las calorías</h3>${energyHtml}</section>
+      <section class="result-card"><p class="eyebrow">PLAN SEMANAL</p><h3>${draft.days} sesiones · en casa</h3><div class="plan-list">${planHtml}</div></section>
+      <section class="result-card projection-card"><p class="eyebrow">HORIZONTE</p><h3>${projectionText}</h3><svg viewBox="0 0 320 120" role="img" aria-label="Curva orientativa de progreso"><path d="M18 28 C90 28 130 48 168 70 S250 ${targetY} 302 ${targetY}" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><circle cx="18" cy="28" r="6"/><circle cx="302" cy="${targetY}" r="7"/><text x="16" y="17">Ahora</text><text x="250" y="108">Horizonte</text></svg>${eventText}<p class="tiny-note">Ilustración orientativa. Los resultados reales dependen de adherencia, descanso, alimentación, salud y respuesta individual.</p></section>`;
+    els.onboardingCancel.hidden=!onboardingEditing;
+  }
+  function openOnboarding(editing=false){onboardingEditing=editing;els.library.hidden=true;els.onboarding.hidden=false;els.profileForm.hidden=false;els.onboardingResult.hidden=true;els.onboardingNav.hidden=false;els.onboardingLead.textContent='No es un examen. Pero si aquí nos contamos películas, luego no protestes cuando el plan no cuadre.';els.profileForm.reset();if(profile)prefillOnboarding();setOnboardingStep(0);els.onboardingCancel.hidden=!editing;}
+  function closeOnboarding(){if(onboardingRequired)return;els.onboarding.hidden=true;els.library.hidden=false;setSection(previousSection||'profile');}
+  function saveOnboarding(){if(!onboardingDraft)return;const wasNew=!profile;profile={...onboardingDraft,updatedAt:new Date().toISOString()};saveProfile();onboardingRequired=false;if(wasNew&&progressData.measurements.length===0){progressData.measurements.push({id:uid(),date:isoToday(),weight:profile.weight,waist:profile.waist,hip:null,thigh:null,arm:null});saveProgress();}els.onboarding.hidden=true;els.library.hidden=false;els.mainTabs.hidden=false;setSection('today');renderProgress();}
+  function renderProfile(){if(!profile)return;const e=estimateEnergy(),bmi=bmiFor(currentWeight(),profile.height),plan=buildWeeklyPlan(),objective=objectiveSnapshot();els.profileSummaryCard.innerHTML=`<p class="eyebrow">OBJETIVO ACTUAL</p><h3>${goalLabel(profile.goal)}</h3><p class="objective-big">🎯 ${objectiveSummary()}</p><p class="muted">Plazo: ${profile.timeframe} meses · ${profile.weeklyHours||'—'} h/semana · ${profile.days} sesiones · ${experienceLabel(profile.experience)}</p><div class="profile-summary-grid"><div><span>IMC orientativo</span><strong>${bmi?bmi.toFixed(1):'—'} ${bmi?`· ${bmiLabel(bmi)}`:''}</strong></div><div><span>Avance</span><strong>${objective?.primary?.progress!==null?`${Math.round(objective.primary.progress)} %`:'Se revisa en 4 semanas'}</strong></div><div><span>Mantenimiento</span><strong>${e?`${e.maintenance[0]}–${e.maintenance[1]} kcal`:'Sin cálculo'}</strong></div><div><span>Objetivo energético</span><strong>${e?.target?`${e.target[0]}–${e.target[1]} kcal`:'Sin objetivo automático'}</strong></div></div><div class="plan-list">${plan.map((x,i)=>`<div class="plan-item"><span class="plan-index">${i+1}</span><div><strong>${x.mode==='bike'?'🚲':'🔥'} ${x.routine}</strong></div><em>·</em></div>`).join('')}</div>`;}
   function setSection(nextSection){
-    if(!profile&&nextSection!=='profile')nextSection='profile';if(section!=='profile')previousSection=section;section=nextSection;
+    if(onboardingRequired){openOnboarding(false);return;}if(section!=='profile')previousSection=section;section=nextSection;
     const panels={today:els.todayPanel,training:els.trainingPanel,progress:els.progressPanel,nutrition:els.nutritionPanel,profile:els.profilePanel};Object.entries(panels).forEach(([key,panel])=>{if(panel)panel.hidden=key!==section;});
     [['today',els.todayTab],['training',els.trainingTab],['progress',els.progressTab],['nutrition',els.nutritionTab],['profile',els.profileTab]].forEach(([key,button])=>button?.classList.toggle('active',key===section));
     if(section==='today')renderToday();if(section==='training')renderLibrary();if(section==='progress')renderProgress();if(section==='nutrition')renderNutrition();if(section==='profile')renderProfile();
-  }
-  function saveProfileForm(event){
-    event.preventDefault();const fd=new FormData(els.profileForm),age=num(fd.get('age')),height=num(fd.get('height')),weight=num(fd.get('weight'));if(!age||!height||!weight)return;
-    const createdAt=profile?.createdAt||isoToday(),activeAudit=profile?.activeAudit||null;
-    profile={name:String(fd.get('name')||'').trim(),age,sex:String(fd.get('sex')||'skip'),height,weight,activity:String(fd.get('activity')||'light'),experience:String(fd.get('experience')||'beginner'),goal:String(fd.get('goal')||'maintain'),timeframe:Number(fd.get('timeframe'))||3,days:Number(fd.get('days'))||4,sessionMinutes:Number(fd.get('sessionMinutes'))||20,goalNote:String(fd.get('goalNote')||'').trim(),equipment:fd.getAll('equipment').map(String),lowImpact:fd.get('lowImpact')==='yes',nutritionMode:String(fd.get('nutritionMode')||'off'),createdAt,updatedAt:new Date().toISOString(),activeAudit};
-    saveProfile();els.mainTabs.hidden=false;setSection('today');renderProgress();
   }
   function startAudit(){
     if(!profile)return;if(profile.activeAudit&&parseLocalDate(profile.activeAudit.end)>=parseLocalDate(isoToday())){if(!window.confirm('¿Reiniciar la auditoría actual y empezar cinco días nuevos? Los check-ins anteriores no se borrarán.'))return;}
@@ -910,12 +1076,12 @@
     workoutFinished = true;
     stopTimer(); releaseWakeLock(); els.progress.style.width = '100%';
     beep(1250, 0.18, 0.14); setTimeout(() => beep(1450, 0.2, 0.14), 190);
-    speak('Entrenamiento terminado. Confirma si quieres guardarlo.', { interrupt: true, rate: 0.95 });
+    speak('Entrenamiento terminado. Confirma si de verdad cuenta.', { interrupt: true, rate: 0.95 });
     pendingWorkoutEffort = null;
     pendingWorkoutEntry = buildPendingWorkoutEntry();
     els.player.hidden = true; els.complete.hidden = false;
     els.completeTitle.textContent = '¿Lo damos por hecho?';
-    els.completeSummary.textContent = `La sesión ha llegado al final: ${currentRoutine().name}${mode === 'strength' ? ` · ${rounds} ronda${rounds === 1 ? '' : 's'}` : ''}. Confirma para que cuente en tu progreso.`;
+    els.completeSummary.textContent = `Has llegado al final: ${currentRoutine().name}${mode === 'strength' ? ` · ${rounds} ronda${rounds === 1 ? '' : 's'}` : ''}. Si lo has hecho, guárdalo. Si estabas trasteando, no nos hagamos trampas al solitario.`;
     els.effortPicker.hidden = false;
     els.confirmWorkout.hidden = false;
     els.discardWorkout.hidden = false;
@@ -931,7 +1097,7 @@
     lastWorkoutId = pendingWorkoutEntry.id;
     pendingWorkoutEntry = null;
     els.completeTitle.textContent = 'Guardado.';
-    els.completeSummary.textContent = 'Ahora sí: este entrenamiento cuenta en tu progreso.';
+    els.completeSummary.textContent = 'Hecho. Sin confeti. Cuenta porque lo has hecho, no porque hayas abierto la rutina.';
     els.effortPicker.hidden = true;
     els.confirmWorkout.hidden = true;
     els.discardWorkout.hidden = true;
@@ -1040,7 +1206,7 @@
   function renderMeasurementDue() {
     const s = measurementSchedule();
     if (s.due.length) {
-      els.measurementDue.innerHTML = `<strong>📏 Hoy toca</strong><p>${s.due.join(' · ')}.</p><small>Por la mañana, después de ir al baño y antes de desayunar.</small>`;
+      els.measurementDue.innerHTML = `<strong>📏 Hoy toca medir</strong><p>${s.due.join(' · ')}.</p><small>Dos minutos y fuera. Por la mañana, después de ir al baño y antes de desayunar.</small>`;
     } else {
       els.measurementDue.innerHTML = `<strong>📏 Próxima medición</strong><p>Peso: ${new Intl.DateTimeFormat('es-ES',{weekday:'long',day:'numeric',month:'short'}).format(s.nextWeight)}.</p><small>Cadera, muslo y brazo: primer viernes del mes.</small>`;
     }
@@ -1067,7 +1233,7 @@
       series = Array.from({length: 80}, (_, i) => series[Math.round(i * step)]);
     }
     if (series.length < 2) {
-      els.chart.innerHTML = `<div class="empty-state">Añade al menos dos registros de ${labels[metric].toLowerCase()} para ver la tendencia.</div>`;
+      els.chart.innerHTML = `<div class="empty-state">Con un dato no hay tendencia, hay un dato. Añade al menos otro registro de ${labels[metric].toLowerCase()} y entonces hablamos.</div>`;
       return;
     }
     const values = series.map((p) => p.value);
@@ -1128,11 +1294,13 @@
     const targetSessions=profile?Math.max(1,(Number(profile.days)||4)*4):16;
     const strengthSessions=current28.filter((x)=>x.mode==='strength').length;
     const strengthMinutes=sumMinutes(current28,'strength'),bikeMinutes=sumMinutes(current28,'bike'),bikeRpe=effortAverage('bike',28,0);
-    const waistNow=recentAverage('waist',28,0),waistPrev=recentAverage('waist',56,28),push=metricSeries('pushups');
+    const waistNow=recentAverage('waist',28,0),waistPrev=recentAverage('waist',56,28),push=metricSeries('pushups'),objective=objectiveSnapshot();
     const pushText=push.length>=2?`${push.at(-2).value} → ${push.at(-1).value}`:push.length?`${push.at(-1).value} · creando referencia`:'sin marca';
-    if(els.progressGoalTitle)els.progressGoalTitle.textContent=profile?`${goalLabel(profile.goal)} · ${profile.timeframe} meses`:'Creando referencia';
+    if(els.progressGoalTitle)els.progressGoalTitle.textContent=profile?`${goalLabel(profile.goal)} · ${objectiveSummary()}`:'Creando referencia';
     const waistText=waistNow===null?'sin datos todavía':waistPrev===null?`${waistNow.toFixed(1)} cm · referencia inicial`:`${(waistNow-waistPrev)>=0?'+':''}${(waistNow-waistPrev).toFixed(1)} cm vs. 4 semanas previas`;
-    els.goals.innerHTML=`<div><span>📅 Constancia</span><strong>${current28.length}/${targetSessions} sesiones previstas en 4 semanas</strong></div><div><span>💪 Fuerza</span><strong>${strengthSessions} sesiones · ${strengthMinutes} min · flexiones ${pushText}</strong></div><div><span>🚲 Bici</span><strong>${bikeMinutes} min${bikeRpe!==null?` · esfuerzo medio ${bikeRpe.toFixed(1)}/5`:''}</strong></div><div><span>📏 Cintura</span><strong>${waistText}</strong></div>`;
+    const targetLine=objective?.primary?`${objective.primary.now??'—'} → ${objective.primary.target} ${objective.primary.unit} · ${Math.round(objective.primary.progress||0)} % del camino`:'Sin cifra corporal fija: aquí mandan tendencia, rendimiento y constancia.';
+    const deadline=objective?.horizon?new Intl.DateTimeFormat('es-ES',{month:'long',year:'numeric'}).format(objective.horizon):'—';
+    els.goals.innerHTML=`<div><span>🎯 Meta</span><strong>${targetLine}</strong></div><div><span>⏳ Plazo</span><strong>${deadline} · revisión cada 4 semanas</strong></div><div><span>📅 Proceso</span><strong>${current28.length}/${targetSessions} sesiones previstas en 4 semanas</strong></div><div><span>💪 Fuerza</span><strong>${strengthSessions} sesiones · ${strengthMinutes} min · flexiones ${pushText}</strong></div><div><span>🚲 Bici</span><strong>${bikeMinutes} min${bikeRpe!==null?` · esfuerzo medio ${bikeRpe.toFixed(1)}/5`:''}</strong></div><div><span>📏 Cintura</span><strong>${objective?.targetWaist?`${objective.nowWaist??'—'} → ${objective.targetWaist} cm`:`${waistText}`}</strong></div>`;
   }
 
 
@@ -1233,8 +1401,12 @@
   els.strengthTab.addEventListener('click',()=>setTrainingMode('strength'));
   els.bikeTab.addEventListener('click',()=>setTrainingMode('bike'));
   els.openRecommendation.addEventListener('click',openRecommendedRoutine);
-  els.profileForm.addEventListener('submit',saveProfileForm);
-  els.profileCancel.addEventListener('click',()=>setSection(previousSection||'today'));
+  els.onboardingNext.addEventListener('click',()=>{if(!validateOnboardingStep())return;const total=els.profileForm.querySelectorAll('[data-onboarding-step]').length;if(onboardingStep>=total-1)renderOnboardingResult();else setOnboardingStep(onboardingStep+1);});
+  els.onboardingBack.addEventListener('click',()=>setOnboardingStep(onboardingStep-1));
+  els.onboardingSave.addEventListener('click',saveOnboarding);
+  els.onboardingAdjust.addEventListener('click',()=>{els.onboardingResult.hidden=true;els.profileForm.hidden=false;els.onboardingNav.hidden=false;setOnboardingStep(Math.max(0,onboardingStep));});
+  els.onboardingCancel.addEventListener('click',closeOnboarding);
+  els.redoOnboarding.addEventListener('click',()=>openOnboarding(true));
   els.startAudit.addEventListener('click',startAudit);
   els.auditForm.addEventListener('submit',saveAuditCheckin);
   els.auditHistory.addEventListener('click',(event)=>{const button=event.target.closest('[data-audit-delete]');if(button)deleteAuditCheckin(button.dataset.auditDelete);});
@@ -1270,6 +1442,5 @@
   Object.values(EXERCISE_IMAGES).forEach((src) => { const img=new Image(); img.src=src; });
   renderLibrary();
   renderProgress();
-  if (profile) populateProfileForm();
-  setSection(profile ? 'today' : 'profile');
+  if(onboardingRequired){els.mainTabs.hidden=true;openOnboarding(false);}else{els.onboarding.hidden=true;els.library.hidden=false;setSection('today');}
 })();

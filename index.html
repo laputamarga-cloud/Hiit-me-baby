@@ -21,6 +21,153 @@
       <button id="installBtn" class="icon-button" type="button" hidden aria-label="Instalar Hiit Me Baby">＋</button>
     </header>
 
+
+    <section id="onboardingScreen" class="onboarding-screen" hidden>
+      <div class="onboarding-top">
+        <div><p class="eyebrow">TU PUNTO DE PARTIDA</p><h2>Vamos a conocerte</h2></div>
+        <span id="onboardingStepLabel" class="local-pill">1 / 12</span>
+      </div>
+      <div class="onboarding-progress" aria-hidden="true"><div id="onboardingProgressBar"></div></div>
+      <p id="onboardingLead" class="onboarding-lead">No es un examen. Pero si aquí nos contamos películas, luego no protestes cuando el plan no cuadre.</p>
+
+      <form id="profileForm" class="onboarding-form">
+        <section class="onboarding-step" data-onboarding-step="0">
+          <p class="eyebrow">PASO 1</p><h3>¿Qué sexo usamos para la estimación energética?</h3>
+          <p class="step-copy">Solo interviene en la fórmula del metabolismo basal. También puedes saltarte el cálculo energético.</p>
+          <div class="choice-grid two">
+            <label class="choice-card"><input type="radio" name="sex" value="female" required><span><b>Mujer</b></span></label>
+            <label class="choice-card"><input type="radio" name="sex" value="male" required><span><b>Hombre</b></span></label>
+            <label class="choice-card wide"><input type="radio" name="sex" value="skip" required><span><b>Prefiero no calcular calorías</b><small>El plan de entrenamiento seguirá funcionando.</small></span></label>
+          </div>
+        </section>
+
+        <section class="onboarding-step" data-onboarding-step="1" hidden>
+          <p class="eyebrow">PASO 2</p><h3>¿Cuál es tu objetivo principal?</h3>
+          <div class="choice-stack">
+            <label class="choice-card"><input type="radio" name="goal" value="lose_fat" required><span><b>Adelgazar</b><small>Quiero reducir grasa y recuperar salud, energía y comodidad.</small></span></label>
+            <label class="choice-card"><input type="radio" name="goal" value="tone" required><span><b>Tonificar</b><small>Quiero recomponer: menos grasa, más músculo y un cuerpo más firme.</small></span></label>
+            <label class="choice-card"><input type="radio" name="goal" value="strength" required><span><b>Ganar músculo</b><small>Quiero ganar fuerza y masa muscular para sentirme más fuerte.</small></span></label>
+          </div>
+        </section>
+
+        <section class="onboarding-step" data-onboarding-step="2" hidden>
+          <p class="eyebrow">PASO 3</p><h3>¿Qué edad tienes?</h3>
+          <label class="big-field"><span>Edad</span><input name="age" type="number" min="18" max="90" step="1" inputmode="numeric" required placeholder="39"></label>
+        </section>
+
+        <section class="onboarding-step" data-onboarding-step="3" hidden>
+          <p class="eyebrow">PASO 4</p><h3>¿Cómo describirías tu punto de partida?</h3>
+          <p class="step-copy">Es una percepción, no una medición de porcentaje de grasa.</p>
+          <div class="choice-stack">
+            <label class="choice-card"><input type="radio" name="bodyType" value="lean" required><span><b>Delgado/a</b><small>Poca grasa corporal y poca o moderada masa muscular.</small></span></label>
+            <label class="choice-card"><input type="radio" name="bodyType" value="average" required><span><b>Intermedio</b><small>Me veo en un punto medio y quiero mejorar composición.</small></span></label>
+            <label class="choice-card"><input type="radio" name="bodyType" value="soft" required><span><b>Grasa algo elevada</b><small>Quiero perder algo de grasa y ganar tono.</small></span></label>
+            <label class="choice-card"><input type="radio" name="bodyType" value="high" required><span><b>Grasa claramente elevada</b><small>Mi prioridad es mejorar salud y composición progresivamente.</small></span></label>
+          </div>
+        </section>
+
+        <section class="onboarding-step" data-onboarding-step="4" hidden>
+          <p class="eyebrow">PASO 5</p><h3>¿Cómo te gustaría verte y sentirte?</h3>
+          <div class="choice-grid two">
+            <label class="choice-card"><input type="radio" name="desiredLook" value="leaner" required><span><b>Más ligera/o</b><small>Menos grasa y más agilidad.</small></span></label>
+            <label class="choice-card"><input type="radio" name="desiredLook" value="defined" required><span><b>Más definida/o</b><small>Firme y con más tono.</small></span></label>
+            <label class="choice-card"><input type="radio" name="desiredLook" value="athletic" required><span><b>Más atlética/o</b><small>Fuerza visible y resistencia.</small></span></label>
+            <label class="choice-card"><input type="radio" name="desiredLook" value="feel" required><span><b>Me importa más sentirme bien</b><small>Energía, salud y capacidad física.</small></span></label>
+          </div>
+        </section>
+
+        <section class="onboarding-step" data-onboarding-step="5" hidden>
+          <p class="eyebrow">PASO 6</p><h3>¿Cómo es un día normal en tu vida?</h3>
+          <div class="choice-stack">
+            <label class="choice-card"><input type="radio" name="activity" value="seated" required><span><b>Paso la mayor parte del día sentado/a</b><small>Trabajo o estudio sentado y me muevo poco.</small></span></label>
+            <label class="choice-card"><input type="radio" name="activity" value="breaks" required><span><b>Tomo descansos activos</b><small>Me levanto, camino y alterno bastante durante el día.</small></span></label>
+            <label class="choice-card"><input type="radio" name="activity" value="standing" required><span><b>Estoy de pie o en movimiento casi todo el día</b><small>Mi vida cotidiana ya tiene bastante actividad.</small></span></label>
+          </div>
+        </section>
+
+        <section class="onboarding-step" data-onboarding-step="6" hidden>
+          <p class="eyebrow">PASO 7</p><h3>¿Qué experiencia tienes entrenando?</h3>
+          <div class="choice-stack">
+            <label class="choice-card"><input type="radio" name="experience" value="beginner" required><span><b>Estoy empezando o retomando</b><small>Necesito progresión sencilla y margen para adaptarme.</small></span></label>
+            <label class="choice-card"><input type="radio" name="experience" value="some" required><span><b>Entreno de vez en cuando</b><small>Conozco ejercicios, pero me falta regularidad.</small></span></label>
+            <label class="choice-card"><input type="radio" name="experience" value="regular" required><span><b>Entreno con regularidad</b><small>Puedo asumir sesiones más completas.</small></span></label>
+          </div>
+        </section>
+
+        <section class="onboarding-step" data-onboarding-step="7" hidden>
+          <p class="eyebrow">PASO 8</p><h3>¿Cuánto tiempo puedes dedicar a la semana?</h3>
+          <div class="choice-grid two">
+            <label class="choice-card"><input type="radio" name="weeklyHours" value="1" required><span><b>≈ 1 hora</b><small>2–3 sesiones cortas.</small></span></label>
+            <label class="choice-card"><input type="radio" name="weeklyHours" value="1.5" required><span><b>≈ 1 h 30</b><small>3 sesiones cómodas.</small></span></label>
+            <label class="choice-card"><input type="radio" name="weeklyHours" value="2" required><span><b>≈ 2 horas</b><small>4 sesiones realistas.</small></span></label>
+            <label class="choice-card"><input type="radio" name="weeklyHours" value="3" required><span><b>3 horas o más</b><small>4–5 sesiones con más margen.</small></span></label>
+          </div>
+        </section>
+
+        <section class="onboarding-step" data-onboarding-step="8" hidden>
+          <p class="eyebrow">PASO 9</p><h3>Medidas de partida</h3>
+          <div class="measure-start-grid">
+            <label>Altura (cm)<input name="height" type="number" min="120" max="220" step="0.5" inputmode="decimal" required></label>
+            <label>Peso (kg)<input name="weight" type="number" min="30" max="250" step="0.1" inputmode="decimal" required></label>
+            <label>Cintura (cm) · opcional<input name="waist" type="number" min="40" max="200" step="0.1" inputmode="decimal" placeholder="Puedes saltarla"></label>
+          </div>
+          <p class="tiny-note">La cintura mejora mucho el seguimiento, pero si hoy no tienes cinta métrica no bloquea nada.</p>
+        </section>
+
+        <section class="onboarding-step" data-onboarding-step="9" hidden>
+          <p class="eyebrow">PASO 10</p><h3>Convierte la intención en una meta</h3><p class="muted">Elige plazo y, si quieres una meta corporal medible, escribe la cifra. La app la usará de verdad en HOY y PROGRESO.</p>
+          <div class="choice-grid three">
+            <label class="choice-card"><input type="radio" name="timeframe" value="3" required><span><b>3 meses</b></span></label>
+            <label class="choice-card"><input type="radio" name="timeframe" value="6" required><span><b>6 meses</b></span></label>
+            <label class="choice-card"><input type="radio" name="timeframe" value="12" required><span><b>1 año</b></span></label>
+          </div>
+          <div class="optional-fields">
+            <label>Peso objetivo · opcional<input name="targetWeight" type="number" min="30" max="250" step="0.1" inputmode="decimal" placeholder="Ej. 45"></label>
+            <label>Cintura objetivo · opcional<input name="targetWaist" type="number" min="40" max="200" step="0.1" inputmode="decimal" placeholder="Si quieres seguirla"></label>
+            <label>¿Tienes una fecha/evento? · opcional<input name="eventDate" type="date"></label>
+          </div>
+          <p class="tiny-note">Si no quieres fijar peso ni cintura, el objetivo será de recomposición/rendimiento y constancia. Si escribes una cifra absurda o un plazo que se pasa de frenada, la app te llevará la contraria y no lo guardará.</p>
+        </section>
+
+        <section class="onboarding-step" data-onboarding-step="10" hidden>
+          <p class="eyebrow">PASO 11</p><h3>¿Qué tienes para entrenar en casa?</h3>
+          <div class="check-grid onboarding-checks">
+            <label><input type="checkbox" name="equipment" value="dumbbells"> Mancuernas</label>
+            <label><input type="checkbox" name="equipment" value="bike"> Bici estática</label>
+            <label><input type="checkbox" name="equipment" value="mat"> Esterilla</label>
+            <label><input type="checkbox" name="equipment" value="chair"> Silla/apoyo</label>
+            <label class="full-field"><input type="checkbox" name="lowImpact" value="yes"> Prefiero bajo impacto / sin saltos</label>
+          </div>
+        </section>
+
+        <section class="onboarding-step" data-onboarding-step="11" hidden>
+          <p class="eyebrow">PASO 12</p><h3>¿Cómo quieres tratar la alimentación?</h3>
+          <div class="choice-stack">
+            <label class="choice-card"><input type="radio" name="nutritionMode" value="off" required><span><b>Sin seguimiento</b><small>No quiero pensar en calorías ni registrar comidas.</small></span></label>
+            <label class="choice-card"><input type="radio" name="nutritionMode" value="orientation" required><span><b>Solo orientación</b><small>Quiero saber un rango aproximado de energía y proteína.</small></span></label>
+            <label class="choice-card"><input type="radio" name="nutritionMode" value="audit" required><span><b>Auditorías puntuales</b><small>Solo registrar unos días cuando necesite investigar un atasco.</small></span></label>
+          </div>
+          <label class="safety-field">Para calcular calorías con más seguridad<select name="energySafety" required><option value="none">No hay ninguna situación especial</option><option value="pregnancy">Embarazo o lactancia</option><option value="eating">TCA actual o antecedente relevante</option><option value="medical">Pauta médica o condición que afecta a la alimentación</option><option value="skip">Prefiero no recibir un objetivo calórico</option></select></label>
+          <p class="tiny-note">Si eliges una situación especial, Hiit Me Baby no calculará un objetivo calórico automático.</p>
+        </section>
+
+        <div id="onboardingNav" class="onboarding-nav">
+          <button id="onboardingBackBtn" class="secondary-button" type="button">ATRÁS</button>
+          <button id="onboardingNextBtn" class="primary-button" type="button">SIGUIENTE</button>
+        </div>
+      </form>
+
+      <section id="onboardingResult" class="onboarding-result" hidden>
+        <div id="onboardingResultContent"></div>
+        <div class="onboarding-result-actions">
+          <button id="onboardingSaveBtn" class="primary-button" type="button">EMPEZAR CON ESTE PLAN</button>
+          <button id="onboardingAdjustBtn" class="secondary-button" type="button">AJUSTAR RESPUESTAS</button>
+          <button id="onboardingCancelBtn" class="secondary-button" type="button" hidden>CANCELAR</button>
+        </div>
+      </section>
+      <p id="profileMessage" class="toast" hidden></p>
+    </section>
+
     <section id="libraryScreen">
       <nav id="mainTabs" class="tabs main-tabs" aria-label="Sección principal">
         <button class="tab active" id="todayTab" type="button">HOY</button>
@@ -163,51 +310,9 @@
       </section>
 
       <section id="profilePanel" class="profile-panel" hidden>
-        <div class="section-heading"><div><p class="eyebrow">PUNTO DE PARTIDA</p><h2 id="profileTitle">Vamos a situarnos</h2></div><span class="local-pill">Se puede cambiar</span></div>
-        <p id="profileIntro" class="profile-intro">Un minuto ahora para que la app deje de recomendar cosas a ciegas.</p>
-        <form id="profileForm" class="profile-form">
-          <section class="profile-card">
-            <p class="eyebrow">AHORA</p><h3>Datos básicos</h3>
-            <div class="form-grid">
-              <label>Nombre o apodo (opcional)<input name="name" autocomplete="nickname" placeholder="—"></label>
-              <label>Edad<input name="age" type="number" min="18" max="90" step="1" required></label>
-              <label>Sexo para la estimación energética<select name="sex" required><option value="female">Mujer</option><option value="male">Hombre</option><option value="skip">Prefiero no usar el cálculo energético</option></select></label>
-              <label>Altura (cm)<input name="height" type="number" min="120" max="220" step="0.5" inputmode="decimal" required></label>
-              <label>Peso actual (kg)<input name="weight" type="number" min="30" max="250" step="0.1" inputmode="decimal" required></label>
-              <label>Actividad fuera del entrenamiento<select name="activity" required><option value="low">Muy sedentaria/o · casi todo el día sentada/o</option><option value="light" selected>Ligera · camino y me muevo algo</option><option value="moderate">Moderada · bastante movimiento diario</option><option value="high">Alta · trabajo o vida diaria muy activa</option></select></label>
-              <label>Experiencia entrenando<select name="experience" required><option value="beginner">Estoy empezando o retomando</option><option value="some">Entreno de vez en cuando</option><option value="regular">Entreno con regularidad</option></select></label>
-            </div>
-            <p class="tiny-note">Edad, sexo, altura, peso y actividad se usan para estimar necesidades energéticas; la experiencia ayuda a no recomendar una progresión demasiado agresiva. Son orientaciones, no una valoración médica.</p>
-          </section>
-          <section class="profile-card">
-            <p class="eyebrow">OBJETIVO</p><h3>¿Qué quieres conseguir?</h3>
-            <div class="form-grid">
-              <label>Objetivo principal<select name="goal" required><option value="lose_fat">Perder grasa gradualmente</option><option value="strength">Ganar fuerza / músculo</option><option value="endurance">Mejorar resistencia</option><option value="maintain">Mantenerme y estar en forma</option><option value="habit">Crear hábito y constancia</option></select></label>
-              <label>Plazo<select name="timeframe" required><option value="3">3 meses</option><option value="6">6 meses</option><option value="12">1 año</option></select></label>
-              <label>Días realistas por semana<select name="days" required><option value="2">2 días</option><option value="3">3 días</option><option value="4" selected>4 días</option><option value="5">5 días</option></select></label>
-              <label>Tiempo habitual por sesión<select name="sessionMinutes" required><option value="12">≈ 12 min</option><option value="20" selected>≈ 20 min</option><option value="25">≈ 25 min</option><option value="30">≈ 30 min</option></select></label>
-              <label class="full-field">¿Qué te gustaría notar al final? (opcional)<textarea name="goalNote" rows="2" placeholder="Más fuerza, menos fatiga, ropa más cómoda…"></textarea></label>
-            </div>
-          </section>
-          <section class="profile-card">
-            <p class="eyebrow">ENTRENAMIENTO</p><h3>Material y preferencias</h3>
-            <div class="check-grid">
-              <label><input type="checkbox" name="equipment" value="dumbbells" checked> Mancuernas</label>
-              <label><input type="checkbox" name="equipment" value="bike" checked> Bici estática</label>
-              <label><input type="checkbox" name="equipment" value="mat" checked> Esterilla</label>
-              <label><input type="checkbox" name="equipment" value="chair" checked> Silla/apoyo</label>
-              <label class="full-field"><input type="checkbox" name="lowImpact" value="yes" checked> Prefiero entrenamientos sin saltos / bajo impacto</label>
-            </div>
-          </section>
-          <section class="profile-card">
-            <p class="eyebrow">ALIMENTACIÓN</p><h3>¿Cuánto quieres seguirla?</h3>
-            <label class="wide-label">Modo de seguimiento<select name="nutritionMode" required><option value="off">Pausada · no quiero seguimiento</option><option value="orientation" selected>Orientación · calorías/proteína sin registrar comidas</option><option value="audit">Auditorías puntuales · 5 días cuando me interese</option></select></label>
-            <p class="tiny-note">Las calorías son una estimación inicial, no una prescripción médica ni una cifra exacta. La app prioriza tendencias de varias semanas. Si hay embarazo/lactancia, un trastorno de la conducta alimentaria, una patología o una pauta clínica, no uses el cálculo automático.</p>
-          </section>
-          <button class="primary-button" type="submit">GUARDAR MI PLAN</button>
-          <button id="profileCancelBtn" class="secondary-button" type="button">CANCELAR</button>
-        </form>
-        <p id="profileMessage" class="toast" hidden></p>
+        <div class="section-heading"><div><p class="eyebrow">PERFIL Y OBJETIVO</p><h2>Tu punto de partida</h2></div><span class="local-pill">Editable</span></div>
+        <section id="profileSummaryCard" class="profile-summary-card"></section>
+        <button id="redoOnboardingBtn" class="primary-button" type="button">REVISAR CUESTIONARIO Y PLAN</button>
       </section>
     </section>
 

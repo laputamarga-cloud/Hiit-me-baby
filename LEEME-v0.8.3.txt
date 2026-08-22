@@ -1,0 +1,33 @@
+HIIT ME BABY v0.8.3 — OBJETIVOS REALES
+
+SUBE A GITHUB ESTOS 4 ARCHIVOS:
+- index.html
+- app.js
+- styles.css
+- service-worker.js
+
+QUÉ CAMBIA
+- La app distingue entre intención y objetivo real.
+- El onboarding permite definir peso objetivo y/o cintura objetivo.
+- El objetivo se muestra en HOY, PERFIL y PROGRESO.
+- Si hay una meta corporal: muestra valor actual → objetivo, cuánto falta y porcentaje de avance.
+- El plazo de 3/6/12 meses aparece como horizonte real y empieza cuando defines/redefines la meta.
+- El proceso queda unido a la meta: sesiones/semana y plan de fuerza/bici.
+- Revisión del plan cada 4 semanas.
+- Si no quieres una cifra corporal, el objetivo puede ser recomposición/rendimiento/constancia.
+
+CORTAFUEGOS
+- Rechaza objetivos de pérdida que impliquen IMC < 18,5.
+- Rechaza plazos de pérdida > 1 % del peso corporal por semana.
+- Para ganar músculo, rechaza una meta de peso inferior al peso actual y ritmos de subida excesivos.
+- Si una meta de pérdida queda cerca del extremo bajo del rango habitual (IMC objetivo < 20), la orientación energética evita un recorte agresivo.
+- Si la cintura objetivo contradice el objetivo de reducir cintura, pide corregirla.
+
+TONO
+- Sigue el tono Hiit Me Baby: pincha, no humilla; cero Mr. Wonderful.
+
+IMPORTANTE
+- El repositorio público seguía en v0.7.1 al preparar esta actualización.
+- No desinstales la PWA.
+- Sustituye los 4 archivos en GitHub y haz Commit changes en main.
+- Esta versión fuerza una nueva pasada por el onboarding porque la meta ahora tiene estructura nueva.

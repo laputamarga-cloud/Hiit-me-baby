@@ -1,4 +1,4 @@
-const CACHE = 'hiit-me-baby-v7-1';
+const CACHE = 'hiit-me-baby-v8-4';
 const CORE = [
   './',
   './index.html',
