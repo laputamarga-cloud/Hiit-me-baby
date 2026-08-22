@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#111111">
-  <meta name="description" content="HIIT de fuerza y entrenamientos guiados de bicicleta estática.">
+  <meta name="description" content="HIIT de fuerza, bicicleta estática y seguimiento de progreso.">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icons/icon-192.png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
@@ -22,29 +22,135 @@
     </header>
 
     <section id="libraryScreen">
-      <nav class="tabs" aria-label="Tipo de entrenamiento">
+      <nav class="tabs" aria-label="Sección">
         <button class="tab active" id="strengthTab" type="button">FUERZA</button>
         <button class="tab" id="bikeTab" type="button">BICI</button>
+        <button class="tab" id="progressTab" type="button">PROGRESO</button>
       </nav>
 
-      <div id="routineList" class="routine-list"></div>
+      <div id="trainingLibrary">
+        <div id="routineList" class="routine-list"></div>
+        <section id="routineDetail" class="detail-card" aria-live="polite"></section>
 
-      <section id="routineDetail" class="detail-card" aria-live="polite"></section>
+        <section id="roundPicker" class="round-picker">
+          <div>
+            <strong>Rondas</strong>
+            <span id="durationEstimate" class="muted"></span>
+          </div>
+          <div class="round-buttons" role="group" aria-label="Número de rondas">
+            <button type="button" data-rounds="1">1</button>
+            <button type="button" data-rounds="2">2</button>
+            <button type="button" data-rounds="3" class="active">3</button>
+          </div>
+        </section>
 
-      <section id="roundPicker" class="round-picker">
-        <div>
-          <strong>Rondas</strong>
-          <span id="durationEstimate" class="muted"></span>
+        <button id="startBtn" class="primary-button" type="button">EMPEZAR</button>
+        <p id="voiceNotice" class="system-note" hidden></p>
+      </div>
+
+      <section id="progressPanel" class="progress-panel" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">SEGUIMIENTO</p>
+            <h2>Tu progreso</h2>
+          </div>
+          <span class="local-pill">🔒 En este dispositivo</span>
         </div>
-        <div class="round-buttons" role="group" aria-label="Número de rondas">
-          <button type="button" data-rounds="1">1</button>
-          <button type="button" data-rounds="2" class="active">2</button>
-          <button type="button" data-rounds="3">3</button>
-        </div>
+
+        <div id="progressSummary" class="stats-grid"></div>
+        <section id="measurementDue" class="due-card"></section>
+
+        <section class="progress-card">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">MEDICIONES</p>
+              <h3>Registrar medidas</h3>
+            </div>
+          </div>
+          <form id="measurementForm" class="measure-form">
+            <label>Fecha<input id="measurementDate" name="date" type="date" required></label>
+            <label>Peso (kg)<input name="weight" inputmode="decimal" placeholder="—"></label>
+            <label>Cintura (cm)<input name="waist" inputmode="decimal" placeholder="—"></label>
+            <label>Cadera (cm)<input name="hip" inputmode="decimal" placeholder="—"></label>
+            <label>Muslo (cm)<input name="thigh" inputmode="decimal" placeholder="—"></label>
+            <label>Brazo (cm)<input name="arm" inputmode="decimal" placeholder="—"></label>
+            <button class="primary-button" type="submit">GUARDAR MEDICIÓN</button>
+          </form>
+          <p class="tiny-note">Plan: peso lunes/miércoles/viernes · cintura cada viernes · cadera, muslo y brazo el primer viernes de cada mes.</p>
+        </section>
+
+        <section class="progress-card">
+          <div class="card-heading chart-controls">
+            <div>
+              <p class="eyebrow">TENDENCIA</p>
+              <h3>Gráfico</h3>
+            </div>
+            <div class="chart-selects">
+              <select id="chartMetric" aria-label="Métrica del gráfico">
+                <option value="weight">Peso</option>
+                <option value="waist">Cintura</option>
+                <option value="hip">Cadera</option>
+                <option value="thigh">Muslo</option>
+                <option value="arm">Brazo</option>
+                <option value="pushups">Flexiones</option>
+              </select>
+              <select id="chartRange" aria-label="Periodo del gráfico">
+                <option value="3m">3 meses</option>
+                <option value="1y">1 año</option>
+                <option value="all">Todo</option>
+              </select>
+            </div>
+          </div>
+          <div id="progressChart" class="chart-box"></div>
+        </section>
+
+        <section class="progress-card">
+          <p class="eyebrow">OBJETIVO · 4 SEMANAS</p>
+          <h3>Cintura ↓ · fuerza ↑ · bici más fácil</h3>
+          <div id="goalStatus" class="goal-status"></div>
+        </section>
+
+        <section class="progress-card">
+          <p class="eyebrow">ENTRENAMIENTO</p>
+          <h3>Últimas 8 semanas</h3>
+          <div class="legend"><span><i class="legend-strength"></i>Fuerza</span><span><i class="legend-bike"></i>Bici</span></div>
+          <div id="weeklyTraining" class="weekly-training"></div>
+        </section>
+
+        <section class="progress-card">
+          <p class="eyebrow">RESUMEN MENSUAL</p>
+          <h3>Año tras año</h3>
+          <div id="monthlySummary"></div>
+        </section>
+
+        <section class="progress-card">
+          <p class="eyebrow">MARCA</p>
+          <h3>Flexiones máximas</h3>
+          <form id="markForm" class="mark-form">
+            <label>Fecha<input id="markDate" name="date" type="date" required></label>
+            <label>Repeticiones<input name="pushups" type="number" min="0" step="1" inputmode="numeric" required></label>
+            <button class="secondary-button" type="submit">GUARDAR MARCA</button>
+          </form>
+        </section>
+
+        <section class="progress-card">
+          <p class="eyebrow">HISTORIAL</p>
+          <h3>Últimos registros</h3>
+          <ul id="recentHistory" class="history-list"></ul>
+        </section>
+
+        <section class="progress-card backup-card">
+          <p class="eyebrow">COPIA DE SEGURIDAD</p>
+          <h3>Tus datos son tuyos</h3>
+          <p class="muted">Exporta un archivo para guardarlo, pasármelo o recuperarlo si cambias de móvil.</p>
+          <div class="backup-actions">
+            <button id="exportBtn" class="secondary-button" type="button">EXPORTAR</button>
+            <button id="importBtn" class="secondary-button" type="button">IMPORTAR</button>
+            <input id="importInput" type="file" accept="application/json,.json" hidden>
+          </div>
+        </section>
+        <p id="progressMessage" class="toast" hidden></p>
       </section>
-
-      <button id="startBtn" class="primary-button" type="button">EMPEZAR</button>
-      <p id="voiceNotice" class="system-note" hidden></p>
     </section>
 
     <section id="playerScreen" hidden aria-live="polite">
@@ -59,10 +165,10 @@
       <div class="progress-track" aria-hidden="true"><div id="progressBar" class="progress-bar"></div></div>
 
       <section id="stage" class="stage">
-        <p id="phaseLabel" class="phase-label">PREPÁRATE</p>
-        <h2 id="exerciseName">Flexiones</h2>
+        <p id="phaseLabel" class="phase-label">CALENTAMIENTO</p>
+        <h2 id="exerciseName">Marcha + brazos</h2>
         <div id="visualCue" class="visual-cue" aria-hidden="true">⚡</div>
-        <div id="timerValue" class="timer-value">3</div>
+        <div id="timerValue" class="timer-value">20</div>
         <p id="coachCue" class="coach-cue"></p>
         <p id="nextCue" class="next-cue"></p>
       </section>
@@ -79,7 +185,18 @@
       <p class="eyebrow">ENTRENAMIENTO COMPLETADO</p>
       <h2 id="completeTitle">Hecho.</h2>
       <p id="completeSummary" class="muted"></p>
-      <button id="backBtn" class="primary-button" type="button">VOLVER A RUTINAS</button>
+      <section id="effortPicker" class="effort-picker">
+        <strong>¿Qué esfuerzo te ha parecido?</strong>
+        <div class="effort-buttons" role="group" aria-label="Esfuerzo percibido de uno a cinco">
+          <button type="button" data-effort="1">1</button>
+          <button type="button" data-effort="2">2</button>
+          <button type="button" data-effort="3">3</button>
+          <button type="button" data-effort="4">4</button>
+          <button type="button" data-effort="5">5</button>
+        </div>
+        <span class="muted">1 = fácil · 5 = me quiero morir</span>
+      </section>
+      <button id="backBtn" class="primary-button" type="button">VOLVER</button>
     </section>
   </main>
 

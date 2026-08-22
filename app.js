@@ -1,96 +1,161 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.5';
+  const VERSION = '0.6';
 
   const STRENGTH = [
     {
       name: 'Full Body A',
-      subtitle: '6 ejercicios · cuerpo completo',
+      subtitle: 'NORMAL · 9 ejercicios · ≈ 19–20 min con 3 rondas',
+      equipment: 'Mancuernas · esterilla · silla estable',
+      warmup: 60,
+      roundBreak: 30,
       exercises: [
         ['Flexiones', 'Todo lo que puedas con técnica limpia.'],
-        ['Puente de glúteo', 'Sube fuerte y aprieta arriba.'],
+        ['Peso muerto rumano', 'Cadera atrás; espalda neutra.'],
         ['Remo con mancuernas', 'Codos atrás y espalda estable.'],
-        ['Bicycle abs', 'Rápido, sin tirar del cuello.'],
+        ['Puente de glúteo', 'Sube fuerte y aprieta arriba.'],
         ['Press de hombros', 'Empuja arriba con control.'],
-        ['Elevaciones de piernas', 'Core firme; lumbar pegada.']
+        ['Bicycle abs', 'Rápido, sin tirar del cuello.'],
+        ['Curl de bíceps', 'Sin balancear el cuerpo.'],
+        ['Elevaciones de piernas', 'Core firme; lumbar pegada.'],
+        ['Tríceps con apoyo', 'Silla estable; empuja con brazos.']
       ]
     },
     {
       name: 'Full Body B',
-      subtitle: '6 ejercicios · mancuernas + suelo',
+      subtitle: 'NORMAL · 9 ejercicios · ≈ 19–20 min con 3 rondas',
+      equipment: 'Mancuernas · esterilla · silla o apoyo estable',
+      warmup: 60,
+      roundBreak: 30,
       exercises: [
-        ['Peso muerto rumano', 'Cadera atrás; espalda neutra.'],
         ['Flexiones inclinadas', 'Ritmo alto sin perder la línea.'],
-        ['Dead bug', 'Alterna lados; lumbar estable.'],
         ['Remo inclinado', 'Aprieta la espalda al subir.'],
+        ['Dead bug', 'Alterna lados; lumbar estable.'],
+        ['Press de suelo', 'Empuja fuerte desde el suelo.'],
         ['Puente marchado', 'Cadera arriba y estable.'],
-        ['Press de suelo', 'Empuja fuerte desde el suelo.']
+        ['Elevaciones laterales', 'Controla especialmente la bajada.'],
+        ['Patada de glúteo derecha', 'Empuja con el talón.'],
+        ['Patada de glúteo izquierda', 'Empuja con el talón.'],
+        ['Shoulder taps', 'Cadera lo más quieta posible.']
       ]
     },
     {
       name: 'Upper Body',
-      subtitle: '6 ejercicios · tren superior',
+      subtitle: 'NORMAL · 9 ejercicios · tren superior',
+      equipment: 'Mancuernas · esterilla · silla estable',
+      warmup: 60,
+      roundBreak: 30,
       exercises: [
         ['Flexiones', 'Ritmo alto y recorrido limpio.'],
         ['Remo con mancuernas', 'Tira hacia las costillas.'],
         ['Press de hombros', 'Cadencia viva.'],
         ['Curl de bíceps', 'Sin balancear el cuerpo.'],
         ['Tríceps con apoyo', 'Silla estable; empuja con brazos.'],
-        ['Elevaciones laterales', 'Controla especialmente la bajada.']
+        ['Elevaciones laterales', 'Controla especialmente la bajada.'],
+        ['Press de suelo', 'Empuja fuerte.'],
+        ['Remo vertical', 'Sube hasta el pecho con control.'],
+        ['Patada de tríceps', 'Codos quietos.']
       ]
     },
     {
       name: 'Core HIIT',
-      subtitle: '6 ejercicios · abdomen + estabilidad',
+      subtitle: 'NORMAL · 9 ejercicios · abdomen + estabilidad',
+      equipment: 'Esterilla',
+      warmup: 60,
+      roundBreak: 30,
       exercises: [
         ['Bicycle abs', 'Mantén el ritmo sin tirar del cuello.'],
         ['Plancha', 'Abdomen y glúteos activos.'],
         ['Dead bug', 'Controla cada extensión.'],
         ['Elevaciones de piernas', 'No arquees la lumbar.'],
         ['Plancha lateral derecha', 'Cadera arriba.'],
-        ['Plancha lateral izquierda', 'Cadera arriba.']
+        ['Plancha lateral izquierda', 'Cadera arriba.'],
+        ['Shoulder taps', 'Cadera lo más quieta posible.'],
+        ['Puente marchado', 'Que la pelvis no baile.'],
+        ['Puente de glúteo', 'Core firme mientras subes.']
       ]
     },
     {
       name: 'Glúteo + posterior',
-      subtitle: '6 ejercicios · sin impacto',
+      subtitle: 'NORMAL · 9 ejercicios · sin impacto',
+      equipment: 'Mancuernas · esterilla',
+      warmup: 60,
+      roundBreak: 30,
       exercises: [
         ['Puente de glúteo', 'Sube y aprieta fuerte.'],
         ['Peso muerto rumano', 'Cadera atrás; espalda neutra.'],
         ['Patada de glúteo derecha', 'Empuja con el talón.'],
         ['Patada de glúteo izquierda', 'Empuja con el talón.'],
         ['Puente marchado', 'Que la pelvis no baile.'],
-        ['Elevaciones de gemelo', 'Sube vivo; baja controlando.']
+        ['Elevaciones de gemelo', 'Sube vivo; baja controlando.'],
+        ['Dead bug', 'Estabilidad antes que velocidad.'],
+        ['Plancha lateral derecha', 'Cadera arriba.'],
+        ['Plancha lateral izquierda', 'Cadera arriba.']
       ]
     },
     {
       name: 'Brazos + hombros',
-      subtitle: '6 ejercicios · mancuernas de 3 kg',
+      subtitle: 'NORMAL · 9 ejercicios · mancuernas',
+      equipment: 'Mancuernas · esterilla · silla estable',
+      warmup: 60,
+      roundBreak: 30,
       exercises: [
         ['Curl de bíceps', 'Ritmo vivo sin balanceo.'],
         ['Press de hombros', 'Empuja arriba.'],
         ['Patada de tríceps', 'Codos quietos.'],
         ['Elevaciones laterales', 'No subas por encima del hombro.'],
         ['Remo vertical', 'Sube hasta el pecho con control.'],
-        ['Press de suelo', 'Empuja fuerte.']
+        ['Press de suelo', 'Empuja fuerte.'],
+        ['Remo con mancuernas', 'Tira hacia las costillas.'],
+        ['Tríceps con apoyo', 'Baja y empuja con control.'],
+        ['Flexiones inclinadas', 'Cierra fuerte sin perder la línea.']
       ]
     },
     {
       name: 'Push Power',
-      subtitle: '6 ejercicios · pecho + hombro + tríceps',
+      subtitle: 'NORMAL · 9 ejercicios · pecho + hombro + tríceps',
+      equipment: 'Mancuernas · esterilla · silla o apoyo estable',
+      warmup: 60,
+      roundBreak: 30,
       exercises: [
         ['Flexiones inclinadas', 'Busca ritmo y buena alineación.'],
         ['Press de suelo', 'Empuja con decisión.'],
         ['Flexiones', 'Las que salgan limpias.'],
         ['Tríceps con apoyo', 'Baja y empuja con control.'],
         ['Press de hombros', 'Cadencia viva.'],
-        ['Shoulder taps', 'Cadera lo más quieta posible.']
+        ['Shoulder taps', 'Cadera lo más quieta posible.'],
+        ['Elevaciones laterales', 'Controla la bajada.'],
+        ['Patada de tríceps', 'Codos pegados al cuerpo.'],
+        ['Remo vertical', 'Sube con control, sin tirón.']
+      ]
+    },
+    {
+      name: 'Full Body · Completa',
+      subtitle: 'COMPLETA · 11 ejercicios · ≈ 24–25 min con 3 rondas',
+      equipment: 'Mancuernas · esterilla · silla o apoyo estable',
+      warmup: 90,
+      roundBreak: 45,
+      exercises: [
+        ['Peso muerto rumano', 'Cadera atrás; espalda neutra.'],
+        ['Flexiones', 'Técnica limpia; adapta si hace falta.'],
+        ['Remo con mancuernas', 'Tira hacia las costillas.'],
+        ['Puente de glúteo', 'Aprieta arriba.'],
+        ['Press de hombros', 'Empuja arriba con control.'],
+        ['Dead bug', 'Lumbar estable.'],
+        ['Curl de bíceps', 'Sin balancear el cuerpo.'],
+        ['Flexiones inclinadas', 'Mantén una línea sólida.'],
+        ['Tríceps con apoyo', 'Silla estable.'],
+        ['Bicycle abs', 'Ritmo alto sin tirar del cuello.'],
+        ['Elevaciones de gemelo', 'Sube y baja con control.']
       ]
     },
     {
       name: 'Exprés 6',
-      subtitle: '6 ejercicios · para días con prisa',
+      subtitle: 'EXPRÉS · 6 ejercicios · ≈ 12–13 min con 3 rondas',
+      equipment: 'Mancuernas · esterilla',
+      warmup: 30,
+      roundBreak: 20,
       exercises: [
         ['Flexiones', 'Empieza fuerte.'],
         ['Peso muerto rumano', 'Cadencia viva.'],
@@ -236,21 +301,31 @@
 
   const $ = (id) => document.getElementById(id);
   const els = {
-    library: $('libraryScreen'), player: $('playerScreen'), complete: $('completeScreen'),
-    strengthTab: $('strengthTab'), bikeTab: $('bikeTab'), list: $('routineList'), detail: $('routineDetail'),
-    roundPicker: $('roundPicker'), duration: $('durationEstimate'), start: $('startBtn'),
+    library: $('libraryScreen'), training: $('trainingLibrary'), progressPanel: $('progressPanel'),
+    player: $('playerScreen'), complete: $('completeScreen'),
+    strengthTab: $('strengthTab'), bikeTab: $('bikeTab'), progressTab: $('progressTab'),
+    list: $('routineList'), detail: $('routineDetail'), roundPicker: $('roundPicker'),
+    duration: $('durationEstimate'), start: $('startBtn'),
     playerRoutine: $('playerRoutine'), playerRound: $('playerRound'), progressText: $('playerProgressText'),
     progress: $('progressBar'), stage: $('stage'), phase: $('phaseLabel'), exercise: $('exerciseName'),
     visual: $('visualCue'), timer: $('timerValue'), coach: $('coachCue'), next: $('nextCue'),
     pause: $('pauseBtn'), skip: $('skipBtn'), quit: $('quitBtn'), back: $('backBtn'),
     completeTitle: $('completeTitle'), completeSummary: $('completeSummary'),
-    install: $('installBtn'), voiceNotice: $('voiceNotice')
+    effortPicker: $('effortPicker'), install: $('installBtn'), voiceNotice: $('voiceNotice'),
+    progressSummary: $('progressSummary'), measurementDue: $('measurementDue'),
+    measurementForm: $('measurementForm'), measurementDate: $('measurementDate'),
+    chartMetric: $('chartMetric'), chartRange: $('chartRange'), chart: $('progressChart'), goals: $('goalStatus'),
+    weeklyTraining: $('weeklyTraining'), monthlySummary: $('monthlySummary'), markForm: $('markForm'), markDate: $('markDate'),
+    recentHistory: $('recentHistory'), exportBtn: $('exportBtn'), importBtn: $('importBtn'),
+    importInput: $('importInput'), progressMessage: $('progressMessage')
   };
 
+  const PROGRESS_KEY = 'hmb-progress-v1';
+  let progressData = loadProgress();
   let mode = 'strength';
   let selectedIndex = 0;
-  let rounds = Number(localStorage.getItem('hmb-rounds')) || 2;
-  if (![1, 2, 3].includes(rounds)) rounds = 2;
+  let rounds = Number(localStorage.getItem('hmb-rounds-v6')) || 3;
+  if (![1, 2, 3].includes(rounds)) rounds = 3;
 
   let sequence = [];
   let timeline = [];
@@ -268,9 +343,48 @@
   let lastAnnouncedSecond = null;
   let workoutFinished = false;
   let pendingReload = false;
+  let lastWorkoutId = null;
 
   const sets = () => mode === 'strength' ? STRENGTH : BIKE;
   const currentRoutine = () => sets()[selectedIndex];
+
+  function loadProgress() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
+      return {
+        measurements: Array.isArray(parsed.measurements) ? parsed.measurements : [],
+        workouts: Array.isArray(parsed.workouts) ? parsed.workouts : [],
+        marks: Array.isArray(parsed.marks) ? parsed.marks : []
+      };
+    } catch (_) {
+      return { measurements: [], workouts: [], marks: [] };
+    }
+  }
+
+  function saveProgress() {
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(progressData));
+  }
+
+  function uid() {
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function isoToday(date = new Date()) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  function parseLocalDate(value) {
+    const [y, m, d] = String(value).split('-').map(Number);
+    return new Date(y, (m || 1) - 1, d || 1, 12, 0, 0, 0);
+  }
+
+  function formatDate(value) {
+    if (!value) return '';
+    return new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }).format(parseLocalDate(value));
+  }
 
   function formatTime(seconds) {
     const m = Math.floor(seconds / 60);
@@ -278,9 +392,17 @@
     return m > 0 ? `${m}:${String(s).padStart(2, '0')}` : String(s);
   }
 
+  function num(value) {
+    const n = Number(String(value ?? '').replace(',', '.'));
+    return Number.isFinite(n) ? n : null;
+  }
+
   function strengthDurationSeconds(routine, count) {
-    const n = routine.exercises.length * count;
-    return 3 + (n * 30) + (Math.max(0, n - 1) * 10);
+    const n = routine.exercises.length;
+    const work = n * 30 * count;
+    const betweenExercises = Math.max(0, n - 1) * 10 * count;
+    const roundBreaks = Math.max(0, count - 1) * (routine.roundBreak || 30);
+    return (routine.warmup || 60) + work + betweenExercises + roundBreaks;
   }
 
   function updateDuration() {
@@ -292,6 +414,15 @@
   }
 
   function renderLibrary() {
+    if (mode === 'progress') {
+      els.training.hidden = true;
+      els.progressPanel.hidden = false;
+      renderProgress();
+      return;
+    }
+
+    els.training.hidden = false;
+    els.progressPanel.hidden = true;
     els.list.innerHTML = '';
     sets().forEach((routine, index) => {
       const button = document.createElement('button');
@@ -312,9 +443,9 @@
       const chips = routine.exercises.map(([name]) => `<span class="exercise-chip">${name}</span>`).join('');
       const visualCount = routine.exercises.filter(([name]) => hasVisual(name)).length;
       const visualNote = visualCount === routine.exercises.length
-        ? '<p class="visual-ready">✨ Esta rutina ya tiene guía visual completa.</p>'
+        ? '<p class="visual-ready">✨ Guía visual completa.</p>'
         : '';
-      els.detail.innerHTML = `<strong>${routine.name}</strong><p>30 s de trabajo · 10 s de descanso. Intensidad alta, siempre con técnica limpia.</p>${visualNote}<div class="exercise-preview">${chips}</div>`;
+      els.detail.innerHTML = `<strong>${routine.name}</strong><p>30 s trabajo · 10 s cambio · ${routine.roundBreak}s entre rondas · ${routine.warmup}s de calentamiento.</p><p class="material-line">🧰 ${routine.equipment}</p>${visualNote}<div class="exercise-preview">${chips}</div>`;
       els.roundPicker.hidden = false;
       updateRoundButtons();
       updateDuration();
@@ -337,11 +468,24 @@
     selectedIndex = 0;
     els.strengthTab.classList.toggle('active', mode === 'strength');
     els.bikeTab.classList.toggle('active', mode === 'bike');
+    els.progressTab.classList.toggle('active', mode === 'progress');
     renderLibrary();
   }
 
+  function warmupSteps(routine) {
+    const total = routine.warmup || 60;
+    const a = Math.floor(total / 3);
+    const b = Math.floor(total / 3);
+    const c = total - a - b;
+    return [
+      { type: 'warmup', duration: a, name: 'Marcha + brazos', cue: `Activa el cuerpo. Ten preparado: ${routine.equipment}.` },
+      { type: 'warmup', duration: b, name: 'Movilidad de hombros', cue: 'Círculos suaves; suelta cuello y hombros.' },
+      { type: 'warmup', duration: c, name: 'Bisagra de cadera', cue: 'Sin peso. Cadera atrás y vuelve arriba.' }
+    ];
+  }
+
   function buildStrengthSequence(routine) {
-    const steps = [{ type: 'prep', duration: 3, name: routine.exercises[0][0], cue: 'Prepárate.' }];
+    const steps = warmupSteps(routine);
     let ordinal = 0;
     const totalWork = routine.exercises.length * rounds;
 
@@ -349,12 +493,15 @@
       routine.exercises.forEach(([name, cue], exerciseIndex) => {
         ordinal += 1;
         steps.push({ type: 'work', duration: 30, name, cue, round, ordinal, totalWork });
-        if (ordinal < totalWork) {
-          const nextExerciseIndex = (exerciseIndex + 1) % routine.exercises.length;
-          const nextName = routine.exercises[nextExerciseIndex][0];
-          steps.push({ type: 'rest', duration: 10, name: 'Descanso', cue: `Siguiente: ${nextName}`, nextName, round });
+        if (exerciseIndex < routine.exercises.length - 1) {
+          const nextName = routine.exercises[exerciseIndex + 1][0];
+          steps.push({ type: 'rest', duration: 10, name: 'Cambio', cue: `Siguiente: ${nextName}`, nextName, round });
         }
       });
+      if (round < rounds) {
+        const nextName = routine.exercises[0][0];
+        steps.push({ type: 'roundRest', duration: routine.roundBreak || 30, name: 'Entre rondas', cue: `Ronda ${round} hecha. Bebe, recolócate y recupera.`, nextName, round });
+      }
     }
     return steps;
   }
@@ -409,8 +556,7 @@
     if (!('speechSynthesis' in window)) return;
     const voices = window.speechSynthesis.getVoices();
     selectedVoice = voices.find((v) => /^es[-_]/i.test(v.lang) && /Google|Microsoft/i.test(v.name))
-      || voices.find((v) => /^es[-_]/i.test(v.lang))
-      || null;
+      || voices.find((v) => /^es[-_]/i.test(v.lang)) || null;
   }
 
   function speak(text, { interrupt = false, rate = 1 } = {}) {
@@ -425,9 +571,7 @@
       if (selectedVoice) utterance.voice = selectedVoice;
       window.speechSynthesis.speak(utterance);
       return true;
-    } catch (_) {
-      return false;
-    }
+    } catch (_) { return false; }
   }
 
   function announceCountdown(second) {
@@ -439,10 +583,12 @@
 
   function announceStep(step) {
     lastAnnouncedSecond = null;
-    if (step.type === 'prep') {
-      speak(`Prepárate. Primer ejercicio: ${step.name}.`, { interrupt: true, rate: 0.96 });
+    if (step.type === 'warmup') {
+      speak(`${step.name}. ${step.cue}`, { interrupt: true, rate: 0.96 });
     } else if (step.type === 'rest') {
-      speak(`Descanso. Siguiente: ${step.nextName}.`, { interrupt: true, rate: 0.98 });
+      speak(`Cambio. Siguiente: ${step.nextName}.`, { interrupt: true, rate: 0.98 });
+    } else if (step.type === 'roundRest') {
+      speak(`${step.cue} Siguiente ronda empieza con ${step.nextName}.`, { interrupt: true, rate: 0.96 });
     } else if (step.type === 'bike') {
       speak(`${step.name}. ${step.cue}`, { interrupt: true, rate: 0.96 });
     }
@@ -452,19 +598,11 @@
     const key = IMAGE_KEY[name];
     return key ? EXERCISE_IMAGES[key] : null;
   }
-
-  function hasVisual(name) {
-    return Boolean(imageForExercise(name));
-  }
-
-  function visualSources(name) {
-    const src = imageForExercise(name);
-    return src ? [src] : [];
-  }
-
+  function hasVisual(name) { return Boolean(imageForExercise(name)); }
+  function visualSources(name) { const src = imageForExercise(name); return src ? [src] : []; }
   function visualExerciseName(step) {
-    if (step.type === 'rest') return step.nextName;
-    if (step.type === 'work' || step.type === 'prep') return step.name;
+    if (step.type === 'rest' || step.type === 'roundRest') return step.nextName;
+    if (step.type === 'work') return step.name;
     return null;
   }
 
@@ -476,23 +614,14 @@
       els.visual.innerHTML = `<img src="${sources[0]}" alt="Demostración de ${visualName}" draggable="false">`;
       return;
     }
-    if (sources.length === 2) {
-      els.visual.classList.add('has-image');
-      els.visual.innerHTML = `<div class="pose-pair" role="img" aria-label="Demostración de ${visualName}: posición inicial y final"><img src="${sources[0]}" alt="" draggable="false"><span class="pose-arrow" aria-hidden="true">→</span><img src="${sources[1]}" alt="" draggable="false"></div>`;
-      return;
-    }
     els.visual.classList.remove('has-image');
     els.visual.innerHTML = '';
-    els.visual.textContent = step.type === 'work' ? '🔥' : step.type === 'rest' ? '💨' : step.type === 'bike' ? '🚲' : '⚡';
+    els.visual.textContent = step.type === 'work' ? '🔥' : step.type === 'rest' ? '💨' : step.type === 'roundRest' ? '🥤' : step.type === 'bike' ? '🚲' : '⚡';
   }
 
   function preloadExerciseVisual(name) {
-    visualSources(name).forEach((src) => {
-      const img = new Image();
-      img.src = src;
-    });
+    visualSources(name).forEach((src) => { const img = new Image(); img.src = src; });
   }
-
   function preloadRoutineVisuals(routine) {
     if (!routine || !routine.exercises) return;
     routine.exercises.forEach(([name]) => preloadExerciseVisual(name));
@@ -502,21 +631,21 @@
     const next = sequence[stepIndex + 1];
     if (!next) return 'Último bloque';
     if (next.type === 'work') return `Después: ${next.name}`;
-    if (next.type === 'rest') return next.cue;
+    if (next.type === 'rest' || next.type === 'roundRest') return next.cue;
     if (next.type === 'bike') return `Después: ${next.name}`;
+    if (next.type === 'warmup') return `Después: ${next.name}`;
     return '';
   }
 
   function renderStepUI({ announce = true, transition = false } = {}) {
     if (stepIndex < 0 || stepIndex >= sequence.length) return;
     const step = sequence[stepIndex];
-
     if (transition) beep(step.type === 'work' ? 1120 : 980, 0.15, 0.14);
 
     els.playerRoutine.textContent = currentRoutine().name;
     els.stage.dataset.phase = step.type;
-    els.phase.textContent = step.type === 'work' ? 'TRABAJO' : step.type === 'rest' ? 'DESCANSO' : step.type === 'bike' ? 'BICI' : 'PREPÁRATE';
-    els.exercise.textContent = step.type === 'rest' ? step.nextName : step.name;
+    els.phase.textContent = step.type === 'work' ? 'TRABAJO' : step.type === 'rest' ? 'CAMBIO' : step.type === 'roundRest' ? 'ENTRE RONDAS' : step.type === 'bike' ? 'BICI' : 'CALENTAMIENTO';
+    els.exercise.textContent = (step.type === 'rest' || step.type === 'roundRest') ? step.nextName : step.name;
     renderVisual(step);
     els.coach.textContent = step.type === 'work' ? `${step.cue} · A TOPE.` : step.cue;
     els.next.textContent = nextDescription();
@@ -529,10 +658,13 @@
       els.playerRound.textContent = `Bloque ${step.block} de ${step.totalBlocks}`;
       els.progressText.textContent = `${step.block} / ${step.totalBlocks}`;
       els.progress.style.width = `${((step.block - 1) / step.totalBlocks) * 100}%`;
+    } else if (step.type === 'warmup') {
+      els.playerRound.textContent = 'Calentamiento';
+      els.progressText.textContent = '';
     } else {
-      els.playerRound.textContent = step.type === 'prep' ? 'Empieza en…' : 'Recupera';
+      els.playerRound.textContent = step.type === 'roundRest' ? 'Recupera' : `Ronda ${step.round}`;
+      if (step.type === 'roundRest') els.progressText.textContent = `Ronda ${step.round} / ${rounds}`;
     }
-
     if (announce) announceStep(step);
   }
 
@@ -540,43 +672,30 @@
     const clockNow = paused ? pauseStartedAt : now;
     return Math.max(0, clockNow - workoutStartedAt - pausedTotalMs + skipOffsetMs);
   }
-
   function locateStep(elapsedMs) {
-    for (let i = 0; i < timeline.length; i++) {
-      if (elapsedMs < timeline[i].endMs) return i;
-    }
+    for (let i = 0; i < timeline.length; i++) if (elapsedMs < timeline[i].endMs) return i;
     return -1;
   }
 
   function syncPlayback({ announceTransition = true } = {}) {
     if (workoutFinished || !sequence.length) return;
-
     const elapsed = activeElapsedMs();
     const located = locateStep(elapsed);
-    if (located === -1) {
-      finishWorkout();
-      return;
-    }
+    if (located === -1) { finishWorkout(); return; }
 
     if (located !== stepIndex) {
       const hadStep = stepIndex >= 0;
       stepIndex = located;
       lastAnnouncedSecond = null;
-      renderStepUI({
-        announce: announceTransition && document.visibilityState === 'visible',
-        transition: hadStep && document.visibilityState === 'visible'
-      });
+      renderStepUI({ announce: announceTransition && document.visibilityState === 'visible', transition: hadStep && document.visibilityState === 'visible' });
     }
 
     const remainingMs = Math.max(0, timeline[stepIndex].endMs - elapsed);
     const remainingSeconds = Math.ceil(remainingMs / 1000);
     els.timer.textContent = formatTime(remainingSeconds);
-
     const step = sequence[stepIndex];
     if (!paused && document.visibilityState === 'visible') {
-      if ((step.type === 'prep' || step.type === 'rest') && remainingSeconds >= 1 && remainingSeconds <= 3) {
-        announceCountdown(remainingSeconds);
-      }
+      if ((step.type === 'warmup' || step.type === 'rest' || step.type === 'roundRest') && remainingSeconds >= 1 && remainingSeconds <= 3) announceCountdown(remainingSeconds);
       if (step.type === 'bike' && remainingSeconds >= 1 && remainingSeconds <= 3 && lastAnnouncedSecond !== remainingSeconds) {
         lastAnnouncedSecond = remainingSeconds;
         beep(remainingSeconds === 1 ? 980 : 700, 0.06, 0.08);
@@ -585,110 +704,327 @@
   }
 
   async function requestWakeLock() {
-    try {
-      if ('wakeLock' in navigator && (!wakeLock || wakeLock.released)) {
-        wakeLock = await navigator.wakeLock.request('screen');
-      }
-    } catch (_) {}
+    try { if ('wakeLock' in navigator && (!wakeLock || wakeLock.released)) wakeLock = await navigator.wakeLock.request('screen'); } catch (_) {}
   }
-
   function releaseWakeLock() {
-    if (wakeLock) {
-      wakeLock.release().catch(() => {});
-      wakeLock = null;
-    }
+    if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
   }
 
   function startWorkout() {
     ensureAudio();
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.resume();
-    }
+    if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); window.speechSynthesis.resume(); }
     requestWakeLock();
-
     sequence = mode === 'strength' ? buildStrengthSequence(currentRoutine()) : buildBikeSequence(currentRoutine());
     buildTimeline();
     stepIndex = -1;
     workoutStartedAt = Date.now();
-    pauseStartedAt = 0;
-    pausedTotalMs = 0;
-    skipOffsetMs = 0;
-    paused = false;
-    workoutFinished = false;
-    lastAnnouncedSecond = null;
-
-    els.library.hidden = true;
-    els.complete.hidden = true;
-    els.player.hidden = false;
-    els.pause.textContent = 'PAUSA';
-
+    pauseStartedAt = 0; pausedTotalMs = 0; skipOffsetMs = 0; paused = false; workoutFinished = false; lastAnnouncedSecond = null; lastWorkoutId = null;
+    els.library.hidden = true; els.complete.hidden = true; els.player.hidden = false; els.pause.textContent = 'PAUSA'; els.progress.style.width = '0%';
     syncPlayback({ announceTransition: true });
     timerId = setInterval(() => syncPlayback({ announceTransition: true }), 250);
+  }
+
+  function logCompletedWorkout() {
+    const realActiveMs = Math.max(0, Date.now() - workoutStartedAt - pausedTotalMs);
+    const actualMinutes = Math.max(1, Math.round(realActiveMs / 60000));
+    const entry = {
+      id: uid(), date: isoToday(), timestamp: new Date().toISOString(), mode,
+      routine: currentRoutine().name, rounds: mode === 'strength' ? rounds : null,
+      minutes: actualMinutes, effort: null
+    };
+    progressData.workouts.push(entry);
+    saveProgress();
+    lastWorkoutId = entry.id;
   }
 
   function finishWorkout() {
     if (workoutFinished) return;
     workoutFinished = true;
-    stopTimer();
-    releaseWakeLock();
-    els.progress.style.width = '100%';
-    beep(1250, 0.18, 0.14);
-    setTimeout(() => beep(1450, 0.2, 0.14), 190);
+    stopTimer(); releaseWakeLock(); els.progress.style.width = '100%';
+    beep(1250, 0.18, 0.14); setTimeout(() => beep(1450, 0.2, 0.14), 190);
     speak('Entrenamiento terminado.', { interrupt: true, rate: 0.95 });
-    els.player.hidden = true;
-    els.complete.hidden = false;
+    logCompletedWorkout();
+    els.player.hidden = true; els.complete.hidden = false;
     els.completeTitle.textContent = 'Hecho.';
     els.completeSummary.textContent = `Has terminado ${currentRoutine().name}${mode === 'strength' ? ` · ${rounds} ronda${rounds === 1 ? '' : 's'}` : ''}.`;
+    els.effortPicker.hidden = false;
+    els.effortPicker.querySelectorAll('[data-effort]').forEach((b) => b.classList.remove('active'));
   }
 
   function quitWorkout() {
-    stopTimer();
-    releaseWakeLock();
-    workoutFinished = true;
+    stopTimer(); releaseWakeLock(); workoutFinished = true;
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-    els.player.hidden = true;
-    els.complete.hidden = true;
-    els.library.hidden = false;
+    els.player.hidden = true; els.complete.hidden = true; els.library.hidden = false;
     if (pendingReload) window.location.reload();
   }
 
   function togglePause() {
     if (!paused) {
-      paused = true;
-      pauseStartedAt = Date.now();
-      els.pause.textContent = 'SEGUIR';
-      if ('speechSynthesis' in window) window.speechSynthesis.pause();
-      return;
+      paused = true; pauseStartedAt = Date.now(); els.pause.textContent = 'SEGUIR';
+      if ('speechSynthesis' in window) window.speechSynthesis.pause(); return;
     }
-
-    pausedTotalMs += Date.now() - pauseStartedAt;
-    pauseStartedAt = 0;
-    paused = false;
-    els.pause.textContent = 'PAUSA';
+    pausedTotalMs += Date.now() - pauseStartedAt; pauseStartedAt = 0; paused = false; els.pause.textContent = 'PAUSA';
     if ('speechSynthesis' in window) window.speechSynthesis.resume();
-    requestWakeLock();
-    syncPlayback({ announceTransition: false });
+    requestWakeLock(); syncPlayback({ announceTransition: false });
   }
 
   function skipStep() {
     if (workoutFinished || stepIndex < 0) return;
     const elapsed = activeElapsedMs();
     const remaining = Math.max(0, timeline[stepIndex].endMs - elapsed);
-    skipOffsetMs += remaining + 1;
-    beep(1050, 0.1, 0.1);
-    syncPlayback({ announceTransition: true });
+    skipOffsetMs += remaining + 1; beep(1050, 0.1, 0.1); syncPlayback({ announceTransition: true });
+  }
+
+  function isFirstFriday(date) {
+    return date.getDay() === 5 && date.getDate() <= 7;
+  }
+
+  function nextWeekday(from, weekday) {
+    const d = new Date(from); d.setHours(12,0,0,0);
+    const delta = (weekday - d.getDay() + 7) % 7;
+    d.setDate(d.getDate() + delta);
+    return d;
+  }
+
+  function nextFirstFriday(from) {
+    const d = new Date(from.getFullYear(), from.getMonth(), 1, 12);
+    let delta = (5 - d.getDay() + 7) % 7;
+    d.setDate(1 + delta);
+    if (d < from) {
+      const next = new Date(from.getFullYear(), from.getMonth() + 1, 1, 12);
+      delta = (5 - next.getDay() + 7) % 7;
+      next.setDate(1 + delta);
+      return next;
+    }
+    return d;
+  }
+
+  function measurementSchedule() {
+    const now = new Date();
+    const day = now.getDay();
+    const due = [];
+    if ([1,3,5].includes(day)) due.push('peso');
+    if (day === 5) due.push('cintura');
+    if (isFirstFriday(now)) due.push('cadera', 'muslo', 'brazo');
+
+    const candidates = [nextWeekday(now, 1), nextWeekday(now, 3), nextWeekday(now, 5)];
+    candidates.forEach((d) => { if (d.toDateString() === now.toDateString()) d.setDate(d.getDate() + 7); });
+    candidates.sort((a,b) => a-b);
+    return { due, nextWeight: candidates[0], nextFull: nextFirstFriday(new Date(now.getTime() + 86400000)) };
+  }
+
+  function sumMinutes(items, modeName) {
+    return items.filter((x) => !modeName || x.mode === modeName).reduce((s, x) => s + (Number(x.minutes) || 0), 0);
+  }
+
+  function daysAgo(n) { const d = new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()-n); return d; }
+  function inRange(dateValue, start, end = new Date()) {
+    const d = parseLocalDate(dateValue); return d >= start && d <= end;
+  }
+
+  function renderProgressSummary() {
+    const start = new Date(); start.setHours(0,0,0,0); start.setDate(start.getDate() - ((start.getDay()+6)%7));
+    const week = progressData.workouts.filter((x) => parseLocalDate(x.date) >= start);
+    const days = new Set(week.map((x) => x.date)).size;
+    const strength = sumMinutes(week, 'strength');
+    const bike = sumMinutes(week, 'bike');
+    els.progressSummary.innerHTML = `
+      <div class="stat-card"><strong>${days}</strong><span>días esta semana</span></div>
+      <div class="stat-card"><strong>${strength}</strong><span>min fuerza</span></div>
+      <div class="stat-card"><strong>${bike}</strong><span>min bici</span></div>`;
+  }
+
+  function renderMeasurementDue() {
+    const s = measurementSchedule();
+    if (s.due.length) {
+      els.measurementDue.innerHTML = `<strong>📏 Hoy toca</strong><p>${s.due.join(' · ')}.</p><small>Por la mañana, después de ir al baño y antes de desayunar.</small>`;
+    } else {
+      els.measurementDue.innerHTML = `<strong>📏 Próxima medición</strong><p>Peso: ${new Intl.DateTimeFormat('es-ES',{weekday:'long',day:'numeric',month:'short'}).format(s.nextWeight)}.</p><small>Cadera, muslo y brazo: primer viernes del mes.</small>`;
+    }
+  }
+
+  function metricSeries(metric) {
+    if (metric === 'pushups') {
+      return progressData.marks.filter((x) => num(x.pushups) !== null).map((x) => ({ date: x.date, value: num(x.pushups) })).sort((a,b)=>a.date.localeCompare(b.date));
+    }
+    return progressData.measurements.filter((x) => num(x[metric]) !== null).map((x) => ({ date: x.date, value: num(x[metric]) })).sort((a,b)=>a.date.localeCompare(b.date));
+  }
+
+  function renderChart() {
+    const metric = els.chartMetric.value;
+    const labels = { weight:'Peso (kg)', waist:'Cintura (cm)', hip:'Cadera (cm)', thigh:'Muslo (cm)', arm:'Brazo (cm)', pushups:'Flexiones máximas' };
+    let series = metricSeries(metric);
+    const range = els.chartRange.value;
+    if (range !== 'all') {
+      const cutoff = daysAgo(range === '3m' ? 90 : 365);
+      series = series.filter((p) => parseLocalDate(p.date) >= cutoff);
+    }
+    if (series.length > 80) {
+      const step = (series.length - 1) / 79;
+      series = Array.from({length: 80}, (_, i) => series[Math.round(i * step)]);
+    }
+    if (series.length < 2) {
+      els.chart.innerHTML = `<div class="empty-state">Añade al menos dos registros de ${labels[metric].toLowerCase()} para ver la tendencia.</div>`;
+      return;
+    }
+    const values = series.map((p) => p.value);
+    let min = Math.min(...values), max = Math.max(...values);
+    if (min === max) { min -= 1; max += 1; }
+    const pad = (max-min)*0.12 || 1; min -= pad; max += pad;
+    const W=620,H=220,L=44,R=14,T=18,B=34;
+    const x = (i) => L + (series.length===1?0:(i/(series.length-1))*(W-L-R));
+    const y = (v) => T + ((max-v)/(max-min))*(H-T-B);
+    const points = series.map((p,i)=>`${x(i).toFixed(1)},${y(p.value).toFixed(1)}`).join(' ');
+    const circles = series.map((p,i)=>`<circle cx="${x(i)}" cy="${y(p.value)}" r="4"><title>${formatDate(p.date)}: ${p.value}</title></circle>`).join('');
+    const first = series[0], last = series[series.length-1];
+    els.chart.innerHTML = `<div class="chart-head"><strong>${labels[metric]}</strong><span>${first.value} → ${last.value}</span></div>
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico de ${labels[metric]}">
+        <line x1="${L}" y1="${T}" x2="${L}" y2="${H-B}" class="axis"/><line x1="${L}" y1="${H-B}" x2="${W-R}" y2="${H-B}" class="axis"/>
+        <text x="4" y="${T+5}" class="chart-label">${max.toFixed(1)}</text><text x="4" y="${H-B}" class="chart-label">${min.toFixed(1)}</text>
+        <polyline points="${points}" class="chart-line"/>${circles}
+        <text x="${L}" y="${H-8}" class="chart-label">${series[0].date.slice(5)}</text><text x="${W-R}" y="${H-8}" text-anchor="end" class="chart-label">${series.at(-1).date.slice(5)}</text>
+      </svg>`;
+  }
+
+  function weeklyBuckets() {
+    const out = [];
+    const today = new Date(); today.setHours(0,0,0,0);
+    const monday = new Date(today); monday.setDate(today.getDate()-((today.getDay()+6)%7));
+    for (let i=7;i>=0;i--) {
+      const start = new Date(monday); start.setDate(monday.getDate()-i*7);
+      const end = new Date(start); end.setDate(start.getDate()+7);
+      const rows = progressData.workouts.filter((w)=>{const d=parseLocalDate(w.date); return d>=start && d<end;});
+      out.push({ label:`${start.getDate()}/${start.getMonth()+1}`, strength:sumMinutes(rows,'strength'), bike:sumMinutes(rows,'bike') });
+    }
+    return out;
+  }
+
+  function renderWeeklyTraining() {
+    const rows = weeklyBuckets();
+    const max = Math.max(1, ...rows.map((r)=>r.strength+r.bike));
+    els.weeklyTraining.innerHTML = rows.map((r)=>{
+      const total=r.strength+r.bike;
+      return `<div class="week-row"><span>${r.label}</span><div class="week-track"><i class="strength-bar" style="width:${(r.strength/max)*100}%"></i><i class="bike-bar" style="width:${(r.bike/max)*100}%"></i></div><strong>${total}m</strong></div>`;
+    }).join('');
+  }
+
+  function recentAverage(metric, startDays, endDays) {
+    const start = daysAgo(startDays), end = daysAgo(endDays);
+    const vals = progressData.measurements.filter((x)=>{const d=parseLocalDate(x.date); return d>=start && d<end && num(x[metric])!==null;}).map((x)=>num(x[metric]));
+    return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+  }
+
+  function effortAverage(modeName, startDays, endDays) {
+    const start=daysAgo(startDays), end=daysAgo(endDays);
+    const vals=progressData.workouts.filter((x)=>x.mode===modeName && x.effort && parseLocalDate(x.date)>=start && parseLocalDate(x.date)<end).map((x)=>Number(x.effort));
+    return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+  }
+
+  function renderGoals() {
+    const waistNow=recentAverage('waist',28,0), waistPrev=recentAverage('waist',56,28);
+    const current28=progressData.workouts.filter((x)=>inRange(x.date,daysAgo(27)));
+    const prevStart=daysAgo(55), prevEnd=daysAgo(28);
+    const previous28=progressData.workouts.filter((x)=>inRange(x.date,prevStart,prevEnd));
+    const strengthNow=current28.filter((x)=>x.mode==='strength').length;
+    const strengthPrev=previous28.filter((x)=>x.mode==='strength').length;
+    const bikeNow=sumMinutes(current28,'bike');
+    const rpeNow=effortAverage('bike',28,0), rpePrev=effortAverage('bike',56,28);
+
+    const waistText = waistNow===null ? 'Añade medidas de cintura' : waistPrev===null ? `${waistNow.toFixed(1)} cm · creando referencia` : `${waistNow-waistPrev<=-0.2?'↓':'→'} ${(waistNow-waistPrev).toFixed(1)} cm vs. 4 semanas previas`;
+    const strengthText = `${strengthNow} sesiones / 28 días${strengthPrev?` · antes ${strengthPrev}`:''}`;
+    const bikeText = `${bikeNow} min / 28 días${rpeNow!==null ? ` · esfuerzo ${rpeNow.toFixed(1)}/5${rpePrev!==null?` (antes ${rpePrev.toFixed(1)})`:''}` : ''}`;
+    els.goals.innerHTML = `<div><span>📏 Cintura</span><strong>${waistText}</strong></div><div><span>💪 Fuerza</span><strong>${strengthText}</strong></div><div><span>🚲 Bici</span><strong>${bikeText}</strong></div>`;
+  }
+
+
+  function monthKey(dateValue) {
+    return String(dateValue).slice(0, 7);
+  }
+
+  function monthLabel(key) {
+    const [y,m]=key.split('-').map(Number);
+    return new Intl.DateTimeFormat('es-ES',{month:'short',year:'2-digit'}).format(new Date(y,m-1,1,12));
+  }
+
+  function renderMonthlySummary() {
+    const keys=new Set();
+    progressData.measurements.forEach((x)=>keys.add(monthKey(x.date)));
+    progressData.workouts.forEach((x)=>keys.add(monthKey(x.date)));
+    const months=[...keys].filter(Boolean).sort().reverse().slice(0,12);
+    if(!months.length){
+      els.monthlySummary.innerHTML='<div class="empty-state">Cuando tengas registros, aquí aparecerá el resumen de cada mes.</div>';
+      return;
+    }
+    const rows=months.map((key)=>{
+      const measurements=progressData.measurements.filter((x)=>monthKey(x.date)===key);
+      const workouts=progressData.workouts.filter((x)=>monthKey(x.date)===key);
+      const avg=(field)=>{const vals=measurements.map((x)=>num(x[field])).filter((v)=>v!==null);return vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1):'—';};
+      return `<tr><th>${monthLabel(key)}</th><td>${avg('weight')}</td><td>${avg('waist')}</td><td>${sumMinutes(workouts,'strength')}</td><td>${sumMinutes(workouts,'bike')}</td></tr>`;
+    }).join('');
+    els.monthlySummary.innerHTML=`<div class="table-scroll"><table class="month-table"><thead><tr><th>Mes</th><th>Peso</th><th>Cintura</th><th>Fuerza</th><th>Bici</th></tr></thead><tbody>${rows}</tbody></table></div><p class="tiny-note">Peso y cintura = media del mes · fuerza y bici = minutos totales.</p>`;
+  }
+
+  function renderRecentHistory() {
+    const items = [
+      ...progressData.workouts.map((x)=>({date:x.date, kind:'workout', text:`${x.mode==='bike'?'🚲':'🔥'} ${x.routine} · ${x.minutes} min${x.effort?` · esfuerzo ${x.effort}/5`:''}`})),
+      ...progressData.measurements.map((x)=>({date:x.date, kind:'measure', text:`📏 Medidas${x.weight?` · ${x.weight} kg`:''}${x.waist?` · cintura ${x.waist} cm`:''}`})),
+      ...progressData.marks.map((x)=>({date:x.date, kind:'mark', text:`🏅 Flexiones máximas: ${x.pushups}`}))
+    ].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
+    els.recentHistory.innerHTML = items.length ? items.map((x)=>`<li><span>${formatDate(x.date)}</span><strong>${x.text}</strong></li>`).join('') : '<li class="empty-state">Todavía no hay historial. El primer entrenamiento terminado se guardará automáticamente.</li>';
+  }
+
+  function renderProgress() {
+    if (!els.measurementDate.value) els.measurementDate.value = isoToday();
+    if (!els.markDate.value) els.markDate.value = isoToday();
+    renderProgressSummary(); renderMeasurementDue(); renderChart(); renderWeeklyTraining(); renderGoals(); renderMonthlySummary(); renderRecentHistory();
+  }
+
+  function flash(message) {
+    els.progressMessage.textContent = message;
+    els.progressMessage.hidden = false;
+    clearTimeout(flash.timer); flash.timer=setTimeout(()=>{els.progressMessage.hidden=true;},2600);
+  }
+
+  function saveMeasurement(event) {
+    event.preventDefault();
+    const fd = new FormData(els.measurementForm);
+    const entry = { id:uid(), date:fd.get('date') || isoToday() };
+    ['weight','waist','hip','thigh','arm'].forEach((key)=>{ const v=num(fd.get(key)); if(v!==null) entry[key]=v; });
+    if (Object.keys(entry).length <= 2) { flash('Añade al menos una medida.'); return; }
+    progressData.measurements.push(entry); saveProgress();
+    els.measurementForm.reset(); els.measurementDate.value=isoToday(); flash('Medición guardada.'); renderProgress();
+  }
+
+  function saveMark(event) {
+    event.preventDefault();
+    const fd=new FormData(els.markForm); const pushups=num(fd.get('pushups'));
+    if(pushups===null || pushups<0){flash('Pon un número válido de flexiones.');return;}
+    progressData.marks.push({id:uid(),date:fd.get('date')||isoToday(),pushups:Math.round(pushups)}); saveProgress();
+    els.markForm.reset(); els.markDate.value=isoToday(); flash('Marca guardada.'); renderProgress();
+  }
+
+  function exportProgress() {
+    const payload={app:'Hiit Me Baby',version:VERSION,exportedAt:new Date().toISOString(),...progressData};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`hiit-me-baby-progreso-${isoToday()}.json`; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),500); flash('Copia de tus datos creada.');
+  }
+
+  async function importProgress(file) {
+    try {
+      const parsed=JSON.parse(await file.text());
+      if(!Array.isArray(parsed.measurements)||!Array.isArray(parsed.workouts)||!Array.isArray(parsed.marks)) throw new Error('Formato');
+      progressData={measurements:parsed.measurements,workouts:parsed.workouts,marks:parsed.marks}; saveProgress(); renderProgress(); flash('Datos importados.');
+    } catch (_) { flash('No he podido leer ese archivo.'); }
   }
 
   els.strengthTab.addEventListener('click', () => setMode('strength'));
   els.bikeTab.addEventListener('click', () => setMode('bike'));
+  els.progressTab.addEventListener('click', () => setMode('progress'));
 
   document.querySelectorAll('[data-rounds]').forEach((button) => {
     button.addEventListener('click', () => {
-      rounds = Number(button.dataset.rounds);
-      localStorage.setItem('hmb-rounds', String(rounds));
-      updateRoundButtons();
-      updateDuration();
+      rounds = Number(button.dataset.rounds); localStorage.setItem('hmb-rounds-v6', String(rounds)); updateRoundButtons(); updateDuration();
     });
   });
 
@@ -696,40 +1032,29 @@
   els.pause.addEventListener('click', togglePause);
   els.skip.addEventListener('click', skipStep);
   els.quit.addEventListener('click', quitWorkout);
-  els.back.addEventListener('click', () => {
-    els.complete.hidden = true;
-    els.library.hidden = false;
-    if (pendingReload) window.location.reload();
-  });
+  els.back.addEventListener('click', () => { els.complete.hidden=true; els.library.hidden=false; els.effortPicker.hidden=true; if(pendingReload) window.location.reload(); });
 
-  if ('speechSynthesis' in window) {
-    pickVoice();
-    window.speechSynthesis.onvoiceschanged = pickVoice;
-  } else {
-    els.voiceNotice.hidden = false;
-    els.voiceNotice.textContent = 'Este navegador no ofrece voz; los avisos sonoros seguirán funcionando.';
-  }
+  els.effortPicker.querySelectorAll('[data-effort]').forEach((button)=>button.addEventListener('click',()=>{
+    const entry=progressData.workouts.find((x)=>x.id===lastWorkoutId); if(!entry)return;
+    entry.effort=Number(button.dataset.effort); saveProgress();
+    els.effortPicker.querySelectorAll('[data-effort]').forEach((b)=>b.classList.toggle('active',b===button));
+  }));
 
-  window.addEventListener('beforeinstallprompt', (event) => {
-    event.preventDefault();
-    deferredInstallPrompt = event;
-    els.install.hidden = false;
-  });
+  els.measurementForm.addEventListener('submit', saveMeasurement);
+  els.markForm.addEventListener('submit', saveMark);
+  els.chartMetric.addEventListener('change', renderChart);
+  els.chartRange.addEventListener('change', renderChart);
+  els.exportBtn.addEventListener('click', exportProgress);
+  els.importBtn.addEventListener('click', ()=>els.importInput.click());
+  els.importInput.addEventListener('change',()=>{const file=els.importInput.files&&els.importInput.files[0]; if(file) importProgress(file); els.importInput.value='';});
 
-  els.install.addEventListener('click', async () => {
-    if (!deferredInstallPrompt) return;
-    deferredInstallPrompt.prompt();
-    await deferredInstallPrompt.userChoice;
-    deferredInstallPrompt = null;
-    els.install.hidden = true;
-  });
+  if ('speechSynthesis' in window) { pickVoice(); window.speechSynthesis.onvoiceschanged=pickVoice; }
+  else { els.voiceNotice.hidden=false; els.voiceNotice.textContent='Este navegador no ofrece voz; los avisos sonoros seguirán funcionando.'; }
 
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && !els.player.hidden && !paused) {
-      requestWakeLock();
-      syncPlayback({ announceTransition: true });
-    }
-  });
+  window.addEventListener('beforeinstallprompt',(event)=>{event.preventDefault();deferredInstallPrompt=event;els.install.hidden=false;});
+  els.install.addEventListener('click',async()=>{if(!deferredInstallPrompt)return;deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;els.install.hidden=true;});
+
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!els.player.hidden&&!paused){requestWakeLock();syncPlayback({announceTransition:true});}});
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
@@ -737,21 +1062,13 @@
         const registration = await navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'none' });
         registration.update().catch(() => {});
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (!els.player.hidden) {
-            pendingReload = true;
-            return;
-          }
+          if (!els.player.hidden) { pendingReload = true; return; }
           window.location.reload();
         });
       } catch (_) {}
     });
   }
 
-  // Precarga los WebP propios para que al arrancar el ejercicio no haya parpadeo.
-  Object.values(EXERCISE_IMAGES).forEach((src) => {
-    const img = new Image();
-    img.src = src;
-  });
-
+  Object.values(EXERCISE_IMAGES).forEach((src) => { const img=new Image(); img.src=src; });
   renderLibrary();
 })();

@@ -1,0 +1,52 @@
+HIIT ME BABY v0.6 — RUTINAS COMPLETAS + PROGRESO
+
+SUBE A GITHUB ESTOS 4 ARCHIVOS:
+- index.html
+- app.js
+- styles.css
+- service-worker.js
+
+Ruta:
+Repositorio Hiit-me-baby → Add file → Upload files
+Arrastra los 4 archivos → Commit changes → main.
+
+NO desinstales la PWA del móvil.
+
+NOVEDADES
+
+ENTRENAMIENTO
+- Rutinas normales: 9 ejercicios.
+- Full Body Completa: 11 ejercicios.
+- Exprés 6 se mantiene para días con prisa.
+- Con 3 rondas:
+  · Exprés ≈ 12:40
+  · Normal ≈ 19:30
+  · Completa ≈ 24:30
+- Calentamiento guiado antes de las rutinas.
+- Descanso específico entre rondas.
+- Aviso del material necesario.
+- Se mantienen las guías visuales femeninas, voz, pitidos, Wake Lock y bici.
+
+PROGRESO
+- Los entrenamientos terminados se guardan automáticamente.
+- Al acabar puedes marcar esfuerzo percibido de 1 a 5.
+- Mediciones:
+  · peso lunes / miércoles / viernes
+  · cintura cada viernes
+  · cadera, muslo y brazo el primer viernes de cada mes
+- Recordatorio dentro de PROGRESO de qué medición toca.
+- Gráficos: peso, cintura, cadera, muslo, brazo y flexiones.
+- Periodos del gráfico: 3 meses / 1 año / todo.
+- Minutos de fuerza y bici de las últimas 8 semanas.
+- Objetivo de 4 semanas: cintura ↓, fuerza ↑, bici más fácil.
+- Resumen mensual: media de peso/cintura + minutos de fuerza/bici.
+- Marca manual de flexiones máximas.
+- Historial de registros.
+- Exportar/importar todos los datos en JSON.
+- Los datos se guardan en el dispositivo y no caducan al cambiar de año.
+
+COMPROBACIONES
+- JavaScript validado sin errores de sintaxis.
+- Todos los IDs de interfaz comprobados.
+- 24 ejercicios usados por las rutinas y 24 con guía visual.
+- 0 imágenes externas.
