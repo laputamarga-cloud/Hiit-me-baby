@@ -1,0 +1,26 @@
+HIIT ME BABY v0.8.4 — ARREGLO DE HOY
+
+CORRIGE
+- HOY ya no se queda con tarjetas vacías.
+- Las fechas guardadas por versiones anteriores se interpretan correctamente.
+- El plan semanal vuelve a aparecer.
+- ABRIR RUTINA vuelve a enlazar con la rutina recomendada.
+- Si un dato antiguo vuelve a provocar un problema, HOY muestra un plan de respaldo
+  en vez de dejar botones muertos.
+- El botón ABRIR RUTINA solo aparece cuando realmente existe una recomendación.
+
+SUBE A GITHUB
+- app.js
+- service-worker.js
+
+Los otros dos archivos incluidos (index.html y styles.css) son iguales a los de v0.8.3;
+puedes subir los cuatro si te resulta más fácil.
+
+PASOS
+1. Add file → Upload files.
+2. Arrastra los archivos.
+3. Baja hasta el final.
+4. Pulsa Commit changes.
+5. Cierra Hiit Me Baby del todo y vuelve a abrirla.
+
+No hace falta desinstalar la PWA.
