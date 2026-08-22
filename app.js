@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.6';
+  const VERSION = '0.6.1';
 
   const STRENGTH = [
     {
@@ -310,6 +310,7 @@
     progress: $('progressBar'), stage: $('stage'), phase: $('phaseLabel'), exercise: $('exerciseName'),
     visual: $('visualCue'), timer: $('timerValue'), coach: $('coachCue'), next: $('nextCue'),
     pause: $('pauseBtn'), skip: $('skipBtn'), quit: $('quitBtn'), back: $('backBtn'),
+    confirmWorkout: $('confirmWorkoutBtn'), discardWorkout: $('discardWorkoutBtn'),
     completeTitle: $('completeTitle'), completeSummary: $('completeSummary'),
     effortPicker: $('effortPicker'), install: $('installBtn'), voiceNotice: $('voiceNotice'),
     progressSummary: $('progressSummary'), measurementDue: $('measurementDue'),
@@ -344,6 +345,8 @@
   let workoutFinished = false;
   let pendingReload = false;
   let lastWorkoutId = null;
+  let pendingWorkoutEntry = null;
+  let pendingWorkoutEffort = null;
 
   const sets = () => mode === 'strength' ? STRENGTH : BIKE;
   const currentRoutine = () => sets()[selectedIndex];
@@ -719,22 +722,20 @@
     stepIndex = -1;
     workoutStartedAt = Date.now();
     pauseStartedAt = 0; pausedTotalMs = 0; skipOffsetMs = 0; paused = false; workoutFinished = false; lastAnnouncedSecond = null; lastWorkoutId = null;
+    pendingWorkoutEntry = null; pendingWorkoutEffort = null;
     els.library.hidden = true; els.complete.hidden = true; els.player.hidden = false; els.pause.textContent = 'PAUSA'; els.progress.style.width = '0%';
     syncPlayback({ announceTransition: true });
     timerId = setInterval(() => syncPlayback({ announceTransition: true }), 250);
   }
 
-  function logCompletedWorkout() {
+  function buildPendingWorkoutEntry() {
     const realActiveMs = Math.max(0, Date.now() - workoutStartedAt - pausedTotalMs);
     const actualMinutes = Math.max(1, Math.round(realActiveMs / 60000));
-    const entry = {
+    return {
       id: uid(), date: isoToday(), timestamp: new Date().toISOString(), mode,
       routine: currentRoutine().name, rounds: mode === 'strength' ? rounds : null,
-      minutes: actualMinutes, effort: null
+      minutes: actualMinutes, effort: pendingWorkoutEffort
     };
-    progressData.workouts.push(entry);
-    saveProgress();
-    lastWorkoutId = entry.id;
   }
 
   function finishWorkout() {
@@ -742,17 +743,51 @@
     workoutFinished = true;
     stopTimer(); releaseWakeLock(); els.progress.style.width = '100%';
     beep(1250, 0.18, 0.14); setTimeout(() => beep(1450, 0.2, 0.14), 190);
-    speak('Entrenamiento terminado.', { interrupt: true, rate: 0.95 });
-    logCompletedWorkout();
+    speak('Entrenamiento terminado. Confirma si quieres guardarlo.', { interrupt: true, rate: 0.95 });
+    pendingWorkoutEffort = null;
+    pendingWorkoutEntry = buildPendingWorkoutEntry();
     els.player.hidden = true; els.complete.hidden = false;
-    els.completeTitle.textContent = 'Hecho.';
-    els.completeSummary.textContent = `Has terminado ${currentRoutine().name}${mode === 'strength' ? ` · ${rounds} ronda${rounds === 1 ? '' : 's'}` : ''}.`;
+    els.completeTitle.textContent = '¿Lo damos por hecho?';
+    els.completeSummary.textContent = `La sesión ha llegado al final: ${currentRoutine().name}${mode === 'strength' ? ` · ${rounds} ronda${rounds === 1 ? '' : 's'}` : ''}. Confirma para que cuente en tu progreso.`;
     els.effortPicker.hidden = false;
+    els.confirmWorkout.hidden = false;
+    els.discardWorkout.hidden = false;
+    els.back.hidden = true;
     els.effortPicker.querySelectorAll('[data-effort]').forEach((b) => b.classList.remove('active'));
+  }
+
+  function confirmCompletedWorkout() {
+    if (!pendingWorkoutEntry) return;
+    pendingWorkoutEntry.effort = pendingWorkoutEffort;
+    progressData.workouts.push(pendingWorkoutEntry);
+    saveProgress();
+    lastWorkoutId = pendingWorkoutEntry.id;
+    pendingWorkoutEntry = null;
+    els.completeTitle.textContent = 'Guardado.';
+    els.completeSummary.textContent = 'Ahora sí: este entrenamiento cuenta en tu progreso.';
+    els.effortPicker.hidden = true;
+    els.confirmWorkout.hidden = true;
+    els.discardWorkout.hidden = true;
+    els.back.hidden = false;
+    renderProgress();
+  }
+
+  function discardCompletedWorkout() {
+    pendingWorkoutEntry = null;
+    pendingWorkoutEffort = null;
+    lastWorkoutId = null;
+    els.complete.hidden = true;
+    els.effortPicker.hidden = true;
+    els.confirmWorkout.hidden = true;
+    els.discardWorkout.hidden = true;
+    els.back.hidden = false;
+    els.library.hidden = false;
+    if (pendingReload) window.location.reload();
   }
 
   function quitWorkout() {
     stopTimer(); releaseWakeLock(); workoutFinished = true;
+    pendingWorkoutEntry = null; pendingWorkoutEffort = null;
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     els.player.hidden = true; els.complete.hidden = true; els.library.hidden = false;
     if (pendingReload) window.location.reload();
@@ -966,11 +1001,25 @@
 
   function renderRecentHistory() {
     const items = [
-      ...progressData.workouts.map((x)=>({date:x.date, kind:'workout', text:`${x.mode==='bike'?'🚲':'🔥'} ${x.routine} · ${x.minutes} min${x.effort?` · esfuerzo ${x.effort}/5`:''}`})),
-      ...progressData.measurements.map((x)=>({date:x.date, kind:'measure', text:`📏 Medidas${x.weight?` · ${x.weight} kg`:''}${x.waist?` · cintura ${x.waist} cm`:''}`})),
-      ...progressData.marks.map((x)=>({date:x.date, kind:'mark', text:`🏅 Flexiones máximas: ${x.pushups}`}))
-    ].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
-    els.recentHistory.innerHTML = items.length ? items.map((x)=>`<li><span>${formatDate(x.date)}</span><strong>${x.text}</strong></li>`).join('') : '<li class="empty-state">Todavía no hay historial. El primer entrenamiento terminado se guardará automáticamente.</li>';
+      ...progressData.workouts.map((x)=>({id:x.id, date:x.date, kind:'workout', text:`${x.mode==='bike'?'🚲':'🔥'} ${x.routine} · ${x.minutes} min${x.effort?` · esfuerzo ${x.effort}/5`:''}`})),
+      ...progressData.measurements.map((x)=>({id:x.id, date:x.date, kind:'measure', text:`📏 Medidas${x.weight?` · ${x.weight} kg`:''}${x.waist?` · cintura ${x.waist} cm`:''}`})),
+      ...progressData.marks.map((x)=>({id:x.id, date:x.date, kind:'mark', text:`🏅 Flexiones máximas: ${x.pushups}`}))
+    ].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,30);
+    els.recentHistory.innerHTML = items.length ? items.map((x)=>`<li><div class="history-entry"><span>${formatDate(x.date)}</span><strong>${x.text}</strong></div><button class="history-delete" type="button" data-delete-kind="${x.kind}" data-delete-id="${x.id}" aria-label="Borrar registro del ${formatDate(x.date)}">BORRAR</button></li>`).join('') : '<li class="empty-state">Todavía no hay historial. Solo se guardarán los entrenamientos que confirmes al terminar.</li>';
+  }
+
+  function deleteHistoryRecord(kind, id) {
+    const buckets = { workout: 'workouts', measure: 'measurements', mark: 'marks' };
+    const bucket = buckets[kind];
+    if (!bucket || !id) return;
+    const exists = progressData[bucket].some((x)=>x.id===id);
+    if (!exists) return;
+    if (!window.confirm('¿Borrar este registro? Esta acción no se puede deshacer.')) return;
+    progressData[bucket] = progressData[bucket].filter((x)=>x.id!==id);
+    if (lastWorkoutId === id) lastWorkoutId = null;
+    saveProgress();
+    renderProgress();
+    flash('Registro borrado.');
   }
 
   function renderProgress() {
@@ -1032,13 +1081,20 @@
   els.pause.addEventListener('click', togglePause);
   els.skip.addEventListener('click', skipStep);
   els.quit.addEventListener('click', quitWorkout);
+  els.confirmWorkout.addEventListener('click', confirmCompletedWorkout);
+  els.discardWorkout.addEventListener('click', discardCompletedWorkout);
   els.back.addEventListener('click', () => { els.complete.hidden=true; els.library.hidden=false; els.effortPicker.hidden=true; if(pendingReload) window.location.reload(); });
 
   els.effortPicker.querySelectorAll('[data-effort]').forEach((button)=>button.addEventListener('click',()=>{
-    const entry=progressData.workouts.find((x)=>x.id===lastWorkoutId); if(!entry)return;
-    entry.effort=Number(button.dataset.effort); saveProgress();
+    pendingWorkoutEffort=Number(button.dataset.effort);
     els.effortPicker.querySelectorAll('[data-effort]').forEach((b)=>b.classList.toggle('active',b===button));
   }));
+
+  els.recentHistory.addEventListener('click',(event)=>{
+    const button=event.target.closest('[data-delete-id]');
+    if(!button)return;
+    deleteHistoryRecord(button.dataset.deleteKind,button.dataset.deleteId);
+  });
 
   els.measurementForm.addEventListener('submit', saveMeasurement);
   els.markForm.addEventListener('submit', saveMark);
@@ -1062,7 +1118,7 @@
         const registration = await navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'none' });
         registration.update().catch(() => {});
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (!els.player.hidden) { pendingReload = true; return; }
+          if (!els.player.hidden || !els.complete.hidden) { pendingReload = true; return; }
           window.location.reload();
         });
       } catch (_) {}

@@ -1,0 +1,33 @@
+HIIT ME BABY v0.6.1 — CONFIRMACIÓN + BORRADO DE REGISTROS
+
+SUBE A GITHUB ESTOS 4 ARCHIVOS:
+- index.html
+- app.js
+- styles.css
+- service-worker.js
+
+Ruta:
+Repositorio Hiit-me-baby → Add file → Upload files
+Arrastra los 4 archivos → Commit changes → main.
+
+NO desinstales la PWA.
+
+CORRECCIONES
+- Llegar al final de una rutina YA NO la guarda automáticamente.
+- Al terminar aparece una confirmación:
+  · GUARDAR ENTRENAMIENTO → se añade a PROGRESO.
+  · NO REGISTRAR → se descarta y no deja huella.
+- El esfuerzo 1–5 es opcional y se guarda solo al confirmar.
+- Salir a mitad de una rutina no registra nada.
+- El historial permite BORRAR entrenamientos, mediciones y marcas.
+- Antes de borrar pide confirmación.
+- Se muestran hasta 30 registros recientes para poder gestionarlos.
+- Se conservan los datos existentes: no cambia la clave de almacenamiento.
+- También se evita que una actualización de la PWA recargue justo mientras estás confirmando el entrenamiento.
+
+COMPROBACIONES
+- JavaScript validado sin errores de sintaxis.
+- Todos los IDs usados por app.js existen en index.html.
+- finishWorkout no escribe en el historial.
+- confirmCompletedWorkout es el único paso que guarda la sesión finalizada.
+- El borrado requiere confirmación.

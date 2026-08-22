@@ -135,7 +135,7 @@
 
         <section class="progress-card">
           <p class="eyebrow">HISTORIAL</p>
-          <h3>Últimos registros</h3>
+          <h3>Registros recientes</h3>
           <ul id="recentHistory" class="history-list"></ul>
         </section>
 
@@ -194,9 +194,13 @@
           <button type="button" data-effort="4">4</button>
           <button type="button" data-effort="5">5</button>
         </div>
-        <span class="muted">1 = fácil · 5 = me quiero morir</span>
+        <span class="muted">1 = fácil · 5 = me quiero morir · opcional</span>
       </section>
-      <button id="backBtn" class="primary-button" type="button">VOLVER</button>
+      <div class="complete-actions">
+        <button id="confirmWorkoutBtn" class="primary-button" type="button">GUARDAR ENTRENAMIENTO</button>
+        <button id="discardWorkoutBtn" class="secondary-button" type="button">NO REGISTRAR</button>
+        <button id="backBtn" class="primary-button" type="button" hidden>VOLVER</button>
+      </div>
     </section>
   </main>
 
