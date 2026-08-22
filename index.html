@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#111111">
-  <meta name="description" content="HIIT de fuerza, bicicleta estática y seguimiento de progreso.">
+  <meta name="description" content="Entrenamiento guiado, objetivos, progreso y orientación de alimentación opcional.">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icons/icon-192.png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
@@ -15,58 +15,78 @@
   <main id="app" class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">TU ENTRENAMIENTO</p>
+        <p class="eyebrow">TU PLAN</p>
         <h1>Hiit Me Baby</h1>
       </div>
       <button id="installBtn" class="icon-button" type="button" hidden aria-label="Instalar Hiit Me Baby">＋</button>
     </header>
 
     <section id="libraryScreen">
-      <nav class="tabs" aria-label="Sección">
-        <button class="tab active" id="strengthTab" type="button">FUERZA</button>
-        <button class="tab" id="bikeTab" type="button">BICI</button>
+      <nav id="mainTabs" class="tabs main-tabs" aria-label="Sección principal">
+        <button class="tab active" id="todayTab" type="button">HOY</button>
+        <button class="tab" id="trainingTab" type="button">ENTRENAR</button>
         <button class="tab" id="progressTab" type="button">PROGRESO</button>
+        <button class="tab" id="nutritionTab" type="button">ALIMENTACIÓN</button>
+        <button class="tab" id="profileTab" type="button">PERFIL</button>
       </nav>
 
-      <div id="trainingLibrary">
-        <div id="routineList" class="routine-list"></div>
-        <section id="routineDetail" class="detail-card" aria-live="polite"></section>
-
-        <section id="roundPicker" class="round-picker">
+      <section id="todayPanel" class="today-panel">
+        <div class="section-heading">
           <div>
-            <strong>Rondas</strong>
-            <span id="durationEstimate" class="muted"></span>
+            <p class="eyebrow">HOY</p>
+            <h2 id="todayGreeting">Tu plan</h2>
           </div>
-          <div class="round-buttons" role="group" aria-label="Número de rondas">
-            <button type="button" data-rounds="1">1</button>
-            <button type="button" data-rounds="2">2</button>
-            <button type="button" data-rounds="3" class="active">3</button>
-          </div>
+          <span id="todayHorizon" class="local-pill"></span>
+        </div>
+        <section id="todayPlanSummary" class="hero-plan"></section>
+        <section class="progress-card recommendation-card">
+          <p class="eyebrow">RECOMENDACIÓN</p>
+          <div id="todayRecommendation"></div>
+          <button id="openRecommendationBtn" class="primary-button" type="button">ABRIR RUTINA</button>
         </section>
+        <section class="progress-card">
+          <p class="eyebrow">ESTA SEMANA</p>
+          <h3>Plan recomendado</h3>
+          <div id="todayWeekPlan" class="plan-list"></div>
+        </section>
+        <section class="progress-card">
+          <p class="eyebrow">ALIMENTACIÓN</p>
+          <h3>Orientación, no policía</h3>
+          <div id="todayNutritionSummary"></div>
+        </section>
+        <section id="todayReview" class="due-card"></section>
+      </section>
 
-        <button id="startBtn" class="primary-button" type="button">EMPEZAR</button>
-        <p id="voiceNotice" class="system-note" hidden></p>
-      </div>
+      <section id="trainingPanel" hidden>
+        <nav class="subtabs" aria-label="Tipo de entrenamiento">
+          <button class="subtab active" id="strengthTab" type="button">FUERZA</button>
+          <button class="subtab" id="bikeTab" type="button">BICI</button>
+        </nav>
+        <div id="trainingLibrary">
+          <div id="routineList" class="routine-list"></div>
+          <section id="routineDetail" class="detail-card" aria-live="polite"></section>
+          <section id="roundPicker" class="round-picker">
+            <div><strong>Rondas</strong><span id="durationEstimate" class="muted"></span></div>
+            <div class="round-buttons" role="group" aria-label="Número de rondas">
+              <button type="button" data-rounds="1">1</button>
+              <button type="button" data-rounds="2">2</button>
+              <button type="button" data-rounds="3" class="active">3</button>
+            </div>
+          </section>
+          <button id="startBtn" class="primary-button" type="button">EMPEZAR</button>
+          <p id="voiceNotice" class="system-note" hidden></p>
+        </div>
+      </section>
 
       <section id="progressPanel" class="progress-panel" hidden>
         <div class="section-heading">
-          <div>
-            <p class="eyebrow">SEGUIMIENTO</p>
-            <h2>Tu progreso</h2>
-          </div>
+          <div><p class="eyebrow">SEGUIMIENTO</p><h2>Tu progreso</h2></div>
           <span class="local-pill">🔒 En este dispositivo</span>
         </div>
-
         <div id="progressSummary" class="stats-grid"></div>
         <section id="measurementDue" class="due-card"></section>
-
         <section class="progress-card">
-          <div class="card-heading">
-            <div>
-              <p class="eyebrow">MEDICIONES</p>
-              <h3>Registrar medidas</h3>
-            </div>
-          </div>
+          <div class="card-heading"><div><p class="eyebrow">MEDICIONES</p><h3>Registrar medidas</h3></div></div>
           <form id="measurementForm" class="measure-form">
             <label>Fecha<input id="measurementDate" name="date" type="date" required></label>
             <label>Peso (kg)<input name="weight" inputmode="decimal" placeholder="—"></label>
@@ -78,132 +98,132 @@
           </form>
           <p class="tiny-note">Plan: peso lunes/miércoles/viernes · cintura cada viernes · cadera, muslo y brazo el primer viernes de cada mes.</p>
         </section>
-
         <section class="progress-card">
           <div class="card-heading chart-controls">
-            <div>
-              <p class="eyebrow">TENDENCIA</p>
-              <h3>Gráfico</h3>
-            </div>
+            <div><p class="eyebrow">TENDENCIA</p><h3>Gráfico</h3></div>
             <div class="chart-selects">
               <select id="chartMetric" aria-label="Métrica del gráfico">
-                <option value="weight">Peso</option>
-                <option value="waist">Cintura</option>
-                <option value="hip">Cadera</option>
-                <option value="thigh">Muslo</option>
-                <option value="arm">Brazo</option>
-                <option value="pushups">Flexiones</option>
+                <option value="weight">Peso</option><option value="waist">Cintura</option><option value="hip">Cadera</option><option value="thigh">Muslo</option><option value="arm">Brazo</option><option value="pushups">Flexiones</option>
               </select>
-              <select id="chartRange" aria-label="Periodo del gráfico">
-                <option value="3m">3 meses</option>
-                <option value="1y">1 año</option>
-                <option value="all">Todo</option>
-              </select>
+              <select id="chartRange" aria-label="Periodo del gráfico"><option value="3m">3 meses</option><option value="1y">1 año</option><option value="all">Todo</option></select>
             </div>
           </div>
           <div id="progressChart" class="chart-box"></div>
         </section>
-
         <section class="progress-card">
-          <p class="eyebrow">OBJETIVO · 4 SEMANAS</p>
-          <h3>Cintura ↓ · fuerza ↑ · bici más fácil</h3>
-          <div id="goalStatus" class="goal-status"></div>
+          <p class="eyebrow">OBJETIVO ACTUAL</p><h3 id="progressGoalTitle">Creando referencia</h3><div id="goalStatus" class="goal-status"></div>
         </section>
-
         <section class="progress-card">
-          <p class="eyebrow">ENTRENAMIENTO</p>
-          <h3>Últimas 8 semanas</h3>
+          <p class="eyebrow">ENTRENAMIENTO</p><h3>Últimas 8 semanas</h3>
           <div class="legend"><span><i class="legend-strength"></i>Fuerza</span><span><i class="legend-bike"></i>Bici</span></div>
           <div id="weeklyTraining" class="weekly-training"></div>
         </section>
-
+        <section class="progress-card"><p class="eyebrow">RESUMEN MENSUAL</p><h3>Año tras año</h3><div id="monthlySummary"></div></section>
         <section class="progress-card">
-          <p class="eyebrow">RESUMEN MENSUAL</p>
-          <h3>Año tras año</h3>
-          <div id="monthlySummary"></div>
-        </section>
-
-        <section class="progress-card">
-          <p class="eyebrow">MARCA</p>
-          <h3>Flexiones máximas</h3>
+          <p class="eyebrow">RENDIMIENTO · OPCIONAL</p><h3>Flexiones máximas</h3>
+          <p class="muted">Una marca personal, no “la medida de tu fuerza”. Úsala solo si te sirve.</p>
           <form id="markForm" class="mark-form">
             <label>Fecha<input id="markDate" name="date" type="date" required></label>
             <label>Repeticiones<input name="pushups" type="number" min="0" step="1" inputmode="numeric" required></label>
             <button class="secondary-button" type="submit">GUARDAR MARCA</button>
           </form>
         </section>
-
-        <section class="progress-card">
-          <p class="eyebrow">HISTORIAL</p>
-          <h3>Registros recientes</h3>
-          <ul id="recentHistory" class="history-list"></ul>
-        </section>
-
+        <section class="progress-card"><p class="eyebrow">HISTORIAL</p><h3>Registros recientes</h3><ul id="recentHistory" class="history-list"></ul></section>
         <section class="progress-card backup-card">
-          <p class="eyebrow">COPIA DE SEGURIDAD</p>
-          <h3>Tus datos son tuyos</h3>
-          <p class="muted">Exporta un archivo para guardarlo, pasármelo o recuperarlo si cambias de móvil.</p>
-          <div class="backup-actions">
-            <button id="exportBtn" class="secondary-button" type="button">EXPORTAR</button>
-            <button id="importBtn" class="secondary-button" type="button">IMPORTAR</button>
-            <input id="importInput" type="file" accept="application/json,.json" hidden>
-          </div>
+          <p class="eyebrow">COPIA DE SEGURIDAD</p><h3>Tus datos son tuyos</h3><p class="muted">Exporta un archivo para guardarlo, compartirlo o recuperarlo si cambias de móvil.</p>
+          <div class="backup-actions"><button id="exportBtn" class="secondary-button" type="button">EXPORTAR</button><button id="importBtn" class="secondary-button" type="button">IMPORTAR</button><input id="importInput" type="file" accept="application/json,.json" hidden></div>
         </section>
         <p id="progressMessage" class="toast" hidden></p>
+      </section>
+
+      <section id="nutritionPanel" class="nutrition-panel" hidden>
+        <div class="section-heading"><div><p class="eyebrow">ALIMENTACIÓN</p><h2>Lo justo para ayudarte</h2></div><span id="nutritionModePill" class="local-pill"></span></div>
+        <section id="energyEstimate" class="hero-plan"></section>
+        <section id="nutritionGuidance" class="due-card"></section>
+        <section id="auditCard" class="progress-card">
+          <p class="eyebrow">AUDITORÍA PUNTUAL</p><h3>5 días y luego fuera</h3>
+          <p class="muted">No hace falta registrar comidas todo el año. Si quieres revisar un atasco o simplemente entender mejor cómo estás comiendo, activas cinco días de check-in rápido.</p>
+          <div id="auditStatus" class="audit-status"></div>
+          <button id="startAuditBtn" class="secondary-button" type="button">EMPEZAR AUDITORÍA DE 5 DÍAS</button>
+          <form id="auditForm" class="audit-form" hidden>
+            <label>Fecha<input id="auditDate" name="date" type="date" required></label>
+            <label>Hambre del día<select name="hunger" required><option value="">—</option><option value="1">1 · nada</option><option value="2">2</option><option value="3">3 · normal</option><option value="4">4</option><option value="5">5 · mucha</option></select></label>
+            <label>Energía<select name="energy" required><option value="">—</option><option value="1">1 · muy baja</option><option value="2">2</option><option value="3">3 · normal</option><option value="4">4</option><option value="5">5 · muy buena</option></select></label>
+            <label>Proteína en ≥2 comidas<select name="protein" required><option value="">—</option><option value="yes">Sí</option><option value="no">No</option><option value="unknown">No sé</option></select></label>
+            <label>Fruta/verdura ≥2 veces<select name="produce" required><option value="">—</option><option value="yes">Sí</option><option value="no">No</option><option value="unknown">No sé</option></select></label>
+            <label class="full-field">Nota opcional<textarea name="note" rows="2" placeholder="Algo raro, mucha hambre, comida fuera…"></textarea></label>
+            <button class="primary-button" type="submit">GUARDAR CHECK-IN</button>
+          </form>
+          <ul id="auditHistory" class="history-list"></ul>
+        </section>
+        <section class="progress-card">
+          <p class="eyebrow">FOTO DE COMIDA</p><h3>No fingimos magia</h3>
+          <p class="muted">El análisis automático de una foto necesita un servicio externo de IA y una base nutricional. No está activado todavía; cuando entre, deberá mostrar estimaciones corregibles y no tratar una foto como una medición exacta.</p>
+        </section>
+      </section>
+
+      <section id="profilePanel" class="profile-panel" hidden>
+        <div class="section-heading"><div><p class="eyebrow">PUNTO DE PARTIDA</p><h2 id="profileTitle">Vamos a situarnos</h2></div><span class="local-pill">Se puede cambiar</span></div>
+        <p id="profileIntro" class="profile-intro">Un minuto ahora para que la app deje de recomendar cosas a ciegas.</p>
+        <form id="profileForm" class="profile-form">
+          <section class="profile-card">
+            <p class="eyebrow">AHORA</p><h3>Datos básicos</h3>
+            <div class="form-grid">
+              <label>Nombre o apodo (opcional)<input name="name" autocomplete="nickname" placeholder="—"></label>
+              <label>Edad<input name="age" type="number" min="18" max="90" step="1" required></label>
+              <label>Sexo para estimación energética<select name="sex" required><option value="female">Mujer</option><option value="male">Hombre</option><option value="skip">No quiero calcular calorías</option></select></label>
+              <label>Altura (cm)<input name="height" type="number" min="120" max="220" step="0.5" inputmode="decimal" required></label>
+              <label>Peso actual (kg)<input name="weight" type="number" min="30" max="250" step="0.1" inputmode="decimal" required></label>
+              <label>Actividad diaria<select name="activity" required><option value="low">Mayormente sentada/o</option><option value="light" selected>Algo activa/o</option><option value="moderate">Bastante activa/o</option><option value="high">Muy activa/o</option></select></label>
+            </div>
+          </section>
+          <section class="profile-card">
+            <p class="eyebrow">OBJETIVO</p><h3>¿Qué quieres conseguir?</h3>
+            <div class="form-grid">
+              <label>Objetivo principal<select name="goal" required><option value="lose_fat">Perder grasa gradualmente</option><option value="strength">Ganar fuerza / músculo</option><option value="endurance">Mejorar resistencia</option><option value="maintain">Mantenerme y estar en forma</option><option value="habit">Crear hábito y constancia</option></select></label>
+              <label>Plazo<select name="timeframe" required><option value="3">3 meses</option><option value="6">6 meses</option><option value="12">1 año</option></select></label>
+              <label>Días realistas por semana<select name="days" required><option value="2">2 días</option><option value="3">3 días</option><option value="4" selected>4 días</option><option value="5">5 días</option></select></label>
+              <label>Tiempo habitual por sesión<select name="sessionMinutes" required><option value="12">≈ 12 min</option><option value="20" selected>≈ 20 min</option><option value="25">≈ 25 min</option><option value="30">≈ 30 min</option></select></label>
+              <label class="full-field">¿Qué te gustaría notar al final? (opcional)<textarea name="goalNote" rows="2" placeholder="Más fuerza, menos fatiga, ropa más cómoda…"></textarea></label>
+            </div>
+          </section>
+          <section class="profile-card">
+            <p class="eyebrow">ENTRENAMIENTO</p><h3>Material y preferencias</h3>
+            <div class="check-grid">
+              <label><input type="checkbox" name="equipment" value="dumbbells" checked> Mancuernas</label>
+              <label><input type="checkbox" name="equipment" value="bike" checked> Bici estática</label>
+              <label><input type="checkbox" name="equipment" value="mat" checked> Esterilla</label>
+              <label><input type="checkbox" name="equipment" value="chair" checked> Silla/apoyo</label>
+              <label class="full-field"><input type="checkbox" name="lowImpact" value="yes" checked> Prefiero entrenamientos sin saltos / bajo impacto</label>
+            </div>
+          </section>
+          <section class="profile-card">
+            <p class="eyebrow">ALIMENTACIÓN</p><h3>¿Cuánto quieres seguirla?</h3>
+            <label class="wide-label">Modo de seguimiento<select name="nutritionMode" required><option value="off">Pausada · no quiero seguimiento</option><option value="orientation" selected>Orientación · calorías/proteína sin registrar comidas</option><option value="audit">Auditorías puntuales · 5 días cuando me interese</option></select></label>
+            <p class="tiny-note">Las calorías son una estimación inicial, no una prescripción médica ni una cifra exacta. La app prioriza tendencias de varias semanas. Si hay embarazo/lactancia, un trastorno de la conducta alimentaria, una patología o una pauta clínica, no uses el cálculo automático.</p>
+          </section>
+          <button class="primary-button" type="submit">GUARDAR MI PLAN</button>
+          <button id="profileCancelBtn" class="secondary-button" type="button">CANCELAR</button>
+        </form>
+        <p id="profileMessage" class="toast" hidden></p>
       </section>
     </section>
 
     <section id="playerScreen" hidden aria-live="polite">
-      <div class="player-heading">
-        <div>
-          <p id="playerRoutine" class="eyebrow"></p>
-          <strong id="playerRound"></strong>
-        </div>
-        <span id="playerProgressText" class="muted"></span>
-      </div>
-
+      <div class="player-heading"><div><p id="playerRoutine" class="eyebrow"></p><strong id="playerRound"></strong></div><span id="playerProgressText" class="muted"></span></div>
       <div class="progress-track" aria-hidden="true"><div id="progressBar" class="progress-bar"></div></div>
-
       <section id="stage" class="stage">
-        <p id="phaseLabel" class="phase-label">CALENTAMIENTO</p>
-        <h2 id="exerciseName">Marcha + brazos</h2>
-        <div id="visualCue" class="visual-cue" aria-hidden="true">⚡</div>
-        <div id="timerValue" class="timer-value">20</div>
-        <p id="coachCue" class="coach-cue"></p>
-        <p id="nextCue" class="next-cue"></p>
+        <p id="phaseLabel" class="phase-label">CALENTAMIENTO</p><h2 id="exerciseName">Marcha + brazos</h2><div id="visualCue" class="visual-cue" aria-hidden="true">⚡</div><div id="timerValue" class="timer-value">20</div><p id="coachCue" class="coach-cue"></p><p id="nextCue" class="next-cue"></p>
       </section>
-
-      <div class="player-controls">
-        <button id="pauseBtn" class="primary-button" type="button">PAUSA</button>
-        <button id="skipBtn" class="secondary-button" type="button">SALTAR</button>
-        <button id="quitBtn" class="secondary-button" type="button">SALIR</button>
-      </div>
+      <div class="player-controls"><button id="pauseBtn" class="primary-button" type="button">PAUSA</button><button id="skipBtn" class="secondary-button" type="button">SALTAR</button><button id="quitBtn" class="secondary-button" type="button">SALIR</button></div>
     </section>
 
     <section id="completeScreen" class="complete-screen" hidden>
-      <div class="complete-icon">⚡</div>
-      <p class="eyebrow">ENTRENAMIENTO COMPLETADO</p>
-      <h2 id="completeTitle">Hecho.</h2>
-      <p id="completeSummary" class="muted"></p>
-      <section id="effortPicker" class="effort-picker">
-        <strong>¿Qué esfuerzo te ha parecido?</strong>
-        <div class="effort-buttons" role="group" aria-label="Esfuerzo percibido de uno a cinco">
-          <button type="button" data-effort="1">1</button>
-          <button type="button" data-effort="2">2</button>
-          <button type="button" data-effort="3">3</button>
-          <button type="button" data-effort="4">4</button>
-          <button type="button" data-effort="5">5</button>
-        </div>
-        <span class="muted">1 = fácil · 5 = me quiero morir · opcional</span>
-      </section>
-      <div class="complete-actions">
-        <button id="confirmWorkoutBtn" class="primary-button" type="button">GUARDAR ENTRENAMIENTO</button>
-        <button id="discardWorkoutBtn" class="secondary-button" type="button">NO REGISTRAR</button>
-        <button id="backBtn" class="primary-button" type="button" hidden>VOLVER</button>
-      </div>
+      <div class="complete-icon">⚡</div><p class="eyebrow">ENTRENAMIENTO COMPLETADO</p><h2 id="completeTitle">Hecho.</h2><p id="completeSummary" class="muted"></p>
+      <section id="effortPicker" class="effort-picker"><strong>¿Qué esfuerzo te ha parecido?</strong><div class="effort-buttons" role="group" aria-label="Esfuerzo percibido de uno a cinco"><button type="button" data-effort="1">1</button><button type="button" data-effort="2">2</button><button type="button" data-effort="3">3</button><button type="button" data-effort="4">4</button><button type="button" data-effort="5">5</button></div><span class="muted">1 = fácil · 5 = me quiero morir · opcional</span></section>
+      <div class="complete-actions"><button id="confirmWorkoutBtn" class="primary-button" type="button">GUARDAR ENTRENAMIENTO</button><button id="discardWorkoutBtn" class="secondary-button" type="button">NO REGISTRAR</button><button id="backBtn" class="primary-button" type="button" hidden>VOLVER</button></div>
     </section>
   </main>
-
   <script src="./app.js" defer></script>
 </body>
 </html>

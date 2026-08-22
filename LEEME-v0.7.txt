@@ -1,0 +1,76 @@
+HIIT ME BABY v0.7 — PLAN PERSONAL + HOY + ALIMENTACIÓN OPCIONAL
+
+SUBE A GITHUB ESTOS 4 ARCHIVOS:
+- index.html
+- app.js
+- styles.css
+- service-worker.js
+
+Repositorio Hiit-me-baby → Add file → Upload files → Commit changes → main.
+NO desinstales la PWA.
+
+QUÉ AÑADE v0.7
+
+1. CUESTIONARIO / PERFIL
+- Primera apertura sin perfil: cuestionario inicial obligatorio para poder recomendar con sentido.
+- Edad, sexo para estimación energética (o no calcular), altura, peso, actividad diaria.
+- Objetivo: perder grasa, fuerza/músculo, resistencia, mantenimiento o hábito.
+- Horizonte: 3 meses / 6 meses / 1 año.
+- Días realistas y tiempo habitual por sesión.
+- Material disponible y preferencia por bajo impacto.
+- Alimentación configurable: pausada / orientación / auditorías puntuales.
+- Todo se puede cambiar después desde PERFIL.
+
+2. HOY
+- Nueva pantalla principal.
+- Resume objetivo y progreso semanal.
+- Propone la siguiente rutina usando las rutinas reales de la app.
+- Tiene en cuenta objetivo, días, duración y disponibilidad de bici/mancuernas.
+- Muestra el plan semanal y qué sesiones ya cuentan como hechas.
+- Revisión del plan cada 4 semanas.
+
+3. ALIMENTACIÓN, SIN OBLIGAR A REGISTRAR COMIDAS
+- Puede quedar completamente pausada.
+- Si se activa, calcula mantenimiento y un rango energético inicial orientativo.
+- Proteína orientativa calculada a partir del peso actual.
+- Usa el último peso registrado en PROGRESO cuando existe.
+- Para pérdida de grasa usa un ajuste suave, no un recorte agresivo.
+- La app no atribuye cambios a la comida si no tiene información suficiente.
+- Si hay pocos datos, recomienda esperar o hacer una auditoría antes de cambiar calorías.
+
+4. AUDITORÍA PUNTUAL DE 5 DÍAS
+- No hay registro diario obligatorio de comidas.
+- Se activa solo cuando apetezca o haga falta información.
+- Check-in diario: hambre, energía, proteína, fruta/verdura y nota opcional.
+- Una entrada por día: si repites fecha, actualiza ese día en vez de duplicarlo.
+- Se puede borrar cada check-in.
+
+5. FOTO DE COMIDA
+- NO está activada todavía.
+- Para reconocer comida y estimar calorías de una foto hace falta conectar un servicio externo de IA y una base nutricional.
+- La interfaz deja claro que, cuando entre, serán estimaciones corregibles, no medidas exactas.
+
+6. PROGRESO
+- Conserva mediciones, gráficos, historial y resúmenes mensuales.
+- Flexiones máximas pasa a presentarse como marca personal opcional, no como “la fuerza”.
+- El objetivo de PROGRESO ahora se adapta al objetivo elegido en PERFIL.
+- La exportación incluye también PERFIL y los check-ins de alimentación.
+
+7. CORRECCIONES DE v0.6.1 INCLUIDAS
+- Una rutina solo se registra tras pulsar GUARDAR ENTRENAMIENTO al terminar.
+- Salir, mirar o no confirmar no suma sesión.
+- Se pueden borrar registros del historial con confirmación.
+
+NOTA SOBRE CALORÍAS
+Las cifras son estimaciones de partida, no prescripciones médicas. No usar el cálculo automático en embarazo/lactancia, trastornos de la conducta alimentaria, patologías o pautas clínicas que requieran seguimiento individual.
+
+COMPROBACIONES REALIZADAS
+- JavaScript validado con Node sin errores de sintaxis.
+- 85 IDs de interfaz comprobados; 0 referencias JS a elementos inexistentes.
+- Primer arranque sin perfil probado con entorno DOM simulado.
+- Guardado de perfil probado.
+- Pantalla HOY y recomendación de rutina probadas con varios objetivos.
+- Orientación energética probada.
+- Auditoría de 5 días probada en lógica de inicio.
+- Todas las rutinas recomendadas existen realmente en la biblioteca.
+- finishWorkout no guarda sesiones; el guardado sigue dependiendo de la confirmación.
