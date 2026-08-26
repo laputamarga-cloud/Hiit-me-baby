@@ -1,7 +1,32 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.8.4';
+  const VERSION = '0.8.6';
+
+  const EFFORT_SCALE_MAX = 5;
+  // The readable labels mirror exactly what the current effort UI shows.
+  // Levels 2–4 are displayed only as their number, so that number is their label.
+  const EFFORT_LABELS = Object.freeze({
+    1: 'fácil',
+    2: '2',
+    3: '3',
+    4: '4',
+    5: 'me quiero morir'
+  });
+
+  function withEffortMetadata(workout) {
+    if (!workout || typeof workout !== 'object') return workout;
+    const effort = Number(workout.effort);
+    if (!Number.isInteger(effort) || effort < 1 || effort > EFFORT_SCALE_MAX) {
+      return { ...workout };
+    }
+    return {
+      ...workout,
+      effort,
+      effortLabel: EFFORT_LABELS[effort],
+      effortScaleMax: EFFORT_SCALE_MAX
+    };
+  }
 
   const STRENGTH = [
     {
@@ -331,6 +356,9 @@
 
   const PROGRESS_KEY = 'hmb-progress-v1';
   const PROFILE_KEY = 'hmb-profile-v1';
+  const ACTIVE_WORKOUT_KEY = 'hmb-active-workout-v1';
+  const ACTIVE_WORKOUT_SCHEMA = 1;
+  const ACTIVE_WORKOUT_MAX_AGE_MS = 4 * 60 * 60 * 1000;
   const ONBOARDING_VERSION = 4;
   let progressData = loadProgress();
   let profile = loadProfile();
@@ -368,6 +396,65 @@
 
   const sets = () => mode === 'strength' ? STRENGTH : BIKE;
   const currentRoutine = () => sets()[selectedIndex];
+
+  function activeWorkoutPhase() {
+    if (workoutFinished && pendingWorkoutEntry) return 'complete';
+    if (!workoutFinished && workoutStartedAt > 0 && sequence.length) return 'playing';
+    return null;
+  }
+
+  function saveActiveWorkout() {
+    const phase = activeWorkoutPhase();
+    if (!phase) return;
+    const routine = currentRoutine();
+    if (!routine) return;
+    try {
+      localStorage.setItem(ACTIVE_WORKOUT_KEY, JSON.stringify({
+        schema: ACTIVE_WORKOUT_SCHEMA,
+        appVersion: VERSION,
+        phase,
+        mode,
+        routine: routine.name,
+        selectedIndex,
+        rounds: mode === 'strength' ? rounds : null,
+        workoutStartedAt,
+        pauseStartedAt: paused ? pauseStartedAt : 0,
+        pausedTotalMs,
+        skipOffsetMs,
+        paused,
+        pendingWorkoutEntry: phase === 'complete' ? pendingWorkoutEntry : null,
+        pendingWorkoutEffort: phase === 'complete' ? pendingWorkoutEffort : null,
+        savedAt: Date.now()
+      }));
+    } catch (_) {}
+  }
+
+  function clearActiveWorkout() {
+    try { localStorage.removeItem(ACTIVE_WORKOUT_KEY); } catch (_) {}
+  }
+
+  function readActiveWorkout() {
+    try {
+      const raw = localStorage.getItem(ACTIVE_WORKOUT_KEY);
+      if (!raw) return null;
+      const saved = JSON.parse(raw);
+      const startedAt = Number(saved?.workoutStartedAt);
+      const savedAt = Number(saved?.savedAt || startedAt);
+      if (Number(saved?.schema) !== ACTIVE_WORKOUT_SCHEMA
+        || !['playing', 'complete'].includes(saved?.phase)
+        || !['strength', 'bike'].includes(saved?.mode)
+        || !Number.isFinite(startedAt) || startedAt <= 0
+        || !Number.isFinite(savedAt)
+        || Date.now() - savedAt > ACTIVE_WORKOUT_MAX_AGE_MS) {
+        clearActiveWorkout();
+        return null;
+      }
+      return saved;
+    } catch (_) {
+      clearActiveWorkout();
+      return null;
+    }
+  }
 
   function loadProgress() {
     try {
@@ -1104,12 +1191,15 @@
     pauseStartedAt = 0; pausedTotalMs = 0; skipOffsetMs = 0; paused = false; workoutFinished = false; lastAnnouncedSecond = null; lastWorkoutId = null;
     pendingWorkoutEntry = null; pendingWorkoutEffort = null;
     els.library.hidden = true; els.complete.hidden = true; els.player.hidden = false; els.pause.textContent = 'PAUSA'; els.progress.style.width = '0%';
+    saveActiveWorkout();
     syncPlayback({ announceTransition: true });
     timerId = setInterval(() => syncPlayback({ announceTransition: true }), 250);
   }
 
   function buildPendingWorkoutEntry() {
-    const realActiveMs = Math.max(0, Date.now() - workoutStartedAt - pausedTotalMs);
+    const wallActiveMs = Math.max(0, Date.now() - workoutStartedAt - pausedTotalMs - (paused && pauseStartedAt ? Date.now() - pauseStartedAt : 0));
+    const plannedActiveMs = timeline.length ? Math.max(0, timeline[timeline.length - 1].endMs - skipOffsetMs) : wallActiveMs;
+    const realActiveMs = Math.min(wallActiveMs, plannedActiveMs);
     const actualMinutes = Math.max(1, Math.round(realActiveMs / 60000));
     return {
       id: uid(), date: isoToday(), timestamp: new Date().toISOString(), mode,
@@ -1118,14 +1208,12 @@
     };
   }
 
-  function finishWorkout() {
-    if (workoutFinished) return;
-    workoutFinished = true;
-    stopTimer(); releaseWakeLock(); els.progress.style.width = '100%';
-    beep(1250, 0.18, 0.14); setTimeout(() => beep(1450, 0.2, 0.14), 190);
-    speak('Entrenamiento terminado. Confirma si de verdad cuenta.', { interrupt: true, rate: 0.95 });
-    pendingWorkoutEffort = null;
-    pendingWorkoutEntry = buildPendingWorkoutEntry();
+  function showCompletionScreen({ announce = true } = {}) {
+    if (announce) {
+      beep(1250, 0.18, 0.14); setTimeout(() => beep(1450, 0.2, 0.14), 190);
+      speak('Entrenamiento terminado. Confirma si de verdad cuenta.', { interrupt: true, rate: 0.95 });
+    }
+    els.library.hidden = true;
     els.player.hidden = true; els.complete.hidden = false;
     els.completeTitle.textContent = '¿Lo damos por hecho?';
     els.completeSummary.textContent = `Has llegado al final: ${currentRoutine().name}${mode === 'strength' ? ` · ${rounds} ronda${rounds === 1 ? '' : 's'}` : ''}. Si lo has hecho, guárdalo. Si estabas trasteando, no nos hagamos trampas al solitario.`;
@@ -1133,16 +1221,27 @@
     els.confirmWorkout.hidden = false;
     els.discardWorkout.hidden = false;
     els.back.hidden = true;
-    els.effortPicker.querySelectorAll('[data-effort]').forEach((b) => b.classList.remove('active'));
+    els.effortPicker.querySelectorAll('[data-effort]').forEach((b) => b.classList.toggle('active', Number(b.dataset.effort) === pendingWorkoutEffort));
+  }
+
+  function finishWorkout({ announce = true } = {}) {
+    if (workoutFinished) return;
+    workoutFinished = true;
+    stopTimer(); releaseWakeLock(); els.progress.style.width = '100%';
+    pendingWorkoutEffort = null;
+    pendingWorkoutEntry = buildPendingWorkoutEntry();
+    showCompletionScreen({ announce });
+    saveActiveWorkout();
   }
 
   function confirmCompletedWorkout() {
     if (!pendingWorkoutEntry) return;
-    pendingWorkoutEntry.effort = pendingWorkoutEffort;
+    pendingWorkoutEntry = withEffortMetadata({ ...pendingWorkoutEntry, effort: pendingWorkoutEffort });
     progressData.workouts.push(pendingWorkoutEntry);
     saveProgress();
     lastWorkoutId = pendingWorkoutEntry.id;
     pendingWorkoutEntry = null;
+    clearActiveWorkout();
     els.completeTitle.textContent = 'Guardado.';
     els.completeSummary.textContent = 'Hecho. Sin confeti. Cuenta porque lo has hecho, no porque hayas abierto la rutina.';
     els.effortPicker.hidden = true;
@@ -1157,6 +1256,7 @@
     pendingWorkoutEntry = null;
     pendingWorkoutEffort = null;
     lastWorkoutId = null;
+    clearActiveWorkout();
     els.complete.hidden = true;
     els.effortPicker.hidden = true;
     els.confirmWorkout.hidden = true;
@@ -1169,6 +1269,7 @@
   function quitWorkout() {
     stopTimer(); releaseWakeLock(); workoutFinished = true;
     pendingWorkoutEntry = null; pendingWorkoutEffort = null;
+    clearActiveWorkout();
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     els.player.hidden = true; els.complete.hidden = true; els.library.hidden = false;
     if (pendingReload) window.location.reload();
@@ -1177,9 +1278,11 @@
   function togglePause() {
     if (!paused) {
       paused = true; pauseStartedAt = Date.now(); els.pause.textContent = 'SEGUIR';
+      saveActiveWorkout();
       if ('speechSynthesis' in window) window.speechSynthesis.pause(); return;
     }
     pausedTotalMs += Date.now() - pauseStartedAt; pauseStartedAt = 0; paused = false; els.pause.textContent = 'PAUSA';
+    saveActiveWorkout();
     if ('speechSynthesis' in window) window.speechSynthesis.resume();
     requestWakeLock(); syncPlayback({ announceTransition: false });
   }
@@ -1188,7 +1291,71 @@
     if (workoutFinished || stepIndex < 0) return;
     const elapsed = activeElapsedMs();
     const remaining = Math.max(0, timeline[stepIndex].endMs - elapsed);
-    skipOffsetMs += remaining + 1; beep(1050, 0.1, 0.1); syncPlayback({ announceTransition: true });
+    skipOffsetMs += remaining + 1;
+    saveActiveWorkout();
+    beep(1050, 0.1, 0.1); syncPlayback({ announceTransition: true });
+  }
+
+  function restoreActiveWorkout() {
+    const saved = readActiveWorkout();
+    if (!saved) return false;
+
+    mode = saved.mode;
+    const list = mode === 'strength' ? STRENGTH : BIKE;
+    let restoredIndex = list.findIndex((routine) => routine.name === saved.routine);
+    if (restoredIndex < 0 && saved.selectedIndex != null && Number.isInteger(Number(saved.selectedIndex))) {
+      const candidate = Number(saved.selectedIndex);
+      if (candidate >= 0 && candidate < list.length) restoredIndex = candidate;
+    }
+    if (restoredIndex < 0) { clearActiveWorkout(); return false; }
+    selectedIndex = restoredIndex;
+
+    if (mode === 'strength') {
+      const restoredRounds = Number(saved.rounds);
+      rounds = [1, 2, 3].includes(restoredRounds) ? restoredRounds : 3;
+      localStorage.setItem('hmb-rounds-v6', String(rounds));
+    }
+    els.strengthTab.classList.toggle('active', mode === 'strength');
+    els.bikeTab.classList.toggle('active', mode === 'bike');
+
+    sequence = mode === 'strength' ? buildStrengthSequence(currentRoutine()) : buildBikeSequence(currentRoutine());
+    buildTimeline();
+    workoutStartedAt = Number(saved.workoutStartedAt);
+    pausedTotalMs = Math.max(0, Number(saved.pausedTotalMs) || 0);
+    skipOffsetMs = Math.max(0, Number(saved.skipOffsetMs) || 0);
+    paused = Boolean(saved.paused);
+    pauseStartedAt = paused ? Number(saved.pauseStartedAt) || Number(saved.savedAt) || Date.now() : 0;
+    stepIndex = -1;
+    lastAnnouncedSecond = null;
+    lastWorkoutId = null;
+    pendingReload = false;
+    const restoredEffort = Number(saved.pendingWorkoutEffort);
+    pendingWorkoutEffort = saved.pendingWorkoutEffort != null
+      && Number.isInteger(restoredEffort) && restoredEffort >= 1 && restoredEffort <= EFFORT_SCALE_MAX
+      ? restoredEffort : null;
+    pendingWorkoutEntry = saved.pendingWorkoutEntry && typeof saved.pendingWorkoutEntry === 'object' ? saved.pendingWorkoutEntry : null;
+
+    if (saved.phase === 'complete') {
+      workoutFinished = true;
+      if (!pendingWorkoutEntry) { clearActiveWorkout(); return false; }
+      stopTimer(); releaseWakeLock();
+      showCompletionScreen({ announce: false });
+      return true;
+    }
+
+    workoutFinished = false;
+    pendingWorkoutEntry = null;
+    pendingWorkoutEffort = null;
+    els.library.hidden = true; els.complete.hidden = true; els.player.hidden = false;
+    els.pause.textContent = paused ? 'SEGUIR' : 'PAUSA';
+    els.progress.style.width = '0%';
+    stopTimer();
+    syncPlayback({ announceTransition: false });
+    if (!workoutFinished) {
+      timerId = setInterval(() => syncPlayback({ announceTransition: true }), 250);
+      if (!paused && document.visibilityState === 'visible') requestWakeLock();
+    }
+    return true;
   }
 
   function isFirstFriday(date) {
@@ -1433,11 +1600,12 @@
   }
 
   function exportProgress() {
-    const payload={app:'Hiit Me Baby',version:VERSION,exportedAt:new Date().toISOString(),profile,...progressData};
+    const exportData={...progressData,workouts:progressData.workouts.map(withEffortMetadata)};
+    const payload={app:'Hiit Me Baby',version:VERSION,exportedAt:new Date().toISOString(),profile,...exportData};
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`hiit-me-baby-datos-${isoToday()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),500);flash('Copia de tus datos creada.');
   }
   async function importProgress(file) {
-    try{const parsed=JSON.parse(await file.text());if(!Array.isArray(parsed.measurements)||!Array.isArray(parsed.workouts)||!Array.isArray(parsed.marks))throw new Error('Formato');progressData={measurements:parsed.measurements,workouts:parsed.workouts,marks:parsed.marks,nutrition:Array.isArray(parsed.nutrition)?parsed.nutrition:[]};if(parsed.profile&&typeof parsed.profile==='object'){profile=parsed.profile;saveProfile();els.mainTabs.hidden=false;}saveProgress();renderProgress();if(profile){renderToday();renderNutrition();populateProfileForm();}flash('Datos importados.');}catch(_){flash('No he podido leer ese archivo.');}
+    try{const parsed=JSON.parse(await file.text());if(!Array.isArray(parsed.measurements)||!Array.isArray(parsed.workouts)||!Array.isArray(parsed.marks))throw new Error('Formato');progressData={measurements:parsed.measurements,workouts:parsed.workouts.map(withEffortMetadata),marks:parsed.marks,nutrition:Array.isArray(parsed.nutrition)?parsed.nutrition:[]};if(parsed.profile&&typeof parsed.profile==='object'){profile=parsed.profile;saveProfile();els.mainTabs.hidden=false;}saveProgress();renderProgress();if(profile){renderToday();renderNutrition();populateProfileForm();}flash('Datos importados.');}catch(_){flash('No he podido leer ese archivo.');}
   }
 
   els.todayTab.addEventListener('click',()=>setSection('today'));
@@ -1461,7 +1629,7 @@
   document.querySelectorAll('[data-rounds]').forEach((button)=>button.addEventListener('click',()=>{rounds=Number(button.dataset.rounds);localStorage.setItem('hmb-rounds-v6',String(rounds));updateRoundButtons();updateDuration();}));
   els.start.addEventListener('click',startWorkout);els.pause.addEventListener('click',togglePause);els.skip.addEventListener('click',skipStep);els.quit.addEventListener('click',quitWorkout);els.confirmWorkout.addEventListener('click',confirmCompletedWorkout);els.discardWorkout.addEventListener('click',discardCompletedWorkout);
   els.back.addEventListener('click',()=>{els.complete.hidden=true;els.library.hidden=false;els.effortPicker.hidden=true;if(profile)setSection('today');if(pendingReload)window.location.reload();});
-  els.effortPicker.querySelectorAll('[data-effort]').forEach((button)=>button.addEventListener('click',()=>{pendingWorkoutEffort=Number(button.dataset.effort);els.effortPicker.querySelectorAll('[data-effort]').forEach((b)=>b.classList.toggle('active',b===button));}));
+  els.effortPicker.querySelectorAll('[data-effort]').forEach((button)=>button.addEventListener('click',()=>{pendingWorkoutEffort=Number(button.dataset.effort);els.effortPicker.querySelectorAll('[data-effort]').forEach((b)=>b.classList.toggle('active',b===button));saveActiveWorkout();}));
   els.recentHistory.addEventListener('click',(event)=>{const button=event.target.closest('[data-delete-id]');if(button)deleteHistoryRecord(button.dataset.deleteKind,button.dataset.deleteId);});
   els.measurementForm.addEventListener('submit',saveMeasurement);els.markForm.addEventListener('submit',saveMark);els.chartMetric.addEventListener('change',renderChart);els.chartRange.addEventListener('change',renderChart);els.exportBtn.addEventListener('click',exportProgress);els.importBtn.addEventListener('click',()=>els.importInput.click());els.importInput.addEventListener('change',()=>{const file=els.importInput.files&&els.importInput.files[0];if(file)importProgress(file);els.importInput.value='';});
 
@@ -1471,7 +1639,13 @@
   window.addEventListener('beforeinstallprompt',(event)=>{event.preventDefault();deferredInstallPrompt=event;els.install.hidden=false;});
   els.install.addEventListener('click',async()=>{if(!deferredInstallPrompt)return;deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;els.install.hidden=true;});
 
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!els.player.hidden&&!paused){requestWakeLock();syncPlayback({announceTransition:true});}});
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='hidden'){saveActiveWorkout();releaseWakeLock();return;}
+    if(!els.player.hidden&&!paused){requestWakeLock();syncPlayback({announceTransition:true});}
+  });
+  window.addEventListener('pagehide',()=>saveActiveWorkout());
+  window.addEventListener('beforeunload',()=>saveActiveWorkout());
+  window.addEventListener('pageshow',()=>{if(!els.player.hidden&&!paused)syncPlayback({announceTransition:false});});
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
@@ -1489,5 +1663,14 @@
   Object.values(EXERCISE_IMAGES).forEach((src) => { const img=new Image(); img.src=src; });
   renderLibrary();
   renderProgress();
-  if(onboardingRequired){els.mainTabs.hidden=true;openOnboarding(false);}else{els.onboarding.hidden=true;els.library.hidden=false;setSection('today');}
+  if(onboardingRequired){
+    els.mainTabs.hidden=true;
+    openOnboarding(false);
+  }else{
+    els.onboarding.hidden=true;
+    if(!restoreActiveWorkout()){
+      els.library.hidden=false;
+      setSection('today');
+    }
+  }
 })();
