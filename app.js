@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.8.8';
+  const VERSION = '0.8.9';
 
   const EFFORT_SCALE_MAX = 5;
   // The readable labels mirror exactly what the current effort UI shows.
@@ -430,7 +430,7 @@
 
   const sets = () => mode === 'strength' ? STRENGTH : BIKE;
   const currentRoutine = () => sets()[selectedIndex];
-  const currentRoundCount = (routine = currentRoutine()) => Number(routine?.fixedRounds) || rounds;
+  const currentRoundCount = () => rounds;
 
   function activeWorkoutPhase() {
     if (workoutFinished && pendingWorkoutEntry) return 'complete';
@@ -935,7 +935,7 @@
     saveProgress();els.auditForm.reset();els.auditDate.value=isoToday();renderNutrition();
   }
   function deleteAuditCheckin(id){if(!id||!progressData.nutrition.some((x)=>x.id===id))return;if(!window.confirm('¿Borrar este check-in de alimentación?'))return;progressData.nutrition=progressData.nutrition.filter((x)=>x.id!==id);saveProgress();renderNutrition();}
-  function openRecommendedRoutine(){if(!currentRecommendation)return;mode=currentRecommendation.mode;const list=sets(),found=list.findIndex((r)=>r.name===currentRecommendation.routine);selectedIndex=found>=0?found:0;if(mode==='strength'){rounds=3;localStorage.setItem('hmb-rounds-v6','3');}els.strengthTab.classList.toggle('active',mode==='strength');els.bikeTab.classList.toggle('active',mode==='bike');setSection('training');}
+  function openRecommendedRoutine(){if(!currentRecommendation)return;mode=currentRecommendation.mode;const list=sets(),found=list.findIndex((r)=>r.name===currentRecommendation.routine);selectedIndex=found>=0?found:0;els.strengthTab.classList.toggle('active',mode==='strength');els.bikeTab.classList.toggle('active',mode==='bike');setSection('training');}
 
   function strengthDurationSeconds(routine, count) {
     const n = routine.exercises.length;
@@ -982,8 +982,8 @@
         ? `${activeRounds} vueltas · trabaja por repeticiones · ${routine.changeDuration||25} s de cambio máximo · ${routine.roundBreak||60} s entre vueltas · pulsa SALTAR cuando acabes antes.`
         : `30 s trabajo · 10 s cambio · ${routine.roundBreak}s entre rondas · ${routine.warmup}s de calentamiento.`;
       els.detail.innerHTML = `<strong>${routine.name}</strong><p>${timingText}</p><p class="material-line">🧰 ${routine.equipment}</p>${visualNote}<div class="exercise-preview">${chips}</div>`;
-      els.roundPicker.hidden = Boolean(routine.fixedRounds);
-      if (!routine.fixedRounds) updateRoundButtons();
+      els.roundPicker.hidden = false;
+      updateRoundButtons();
       updateDuration();
       preloadRoutineVisuals(routine);
     } else {
