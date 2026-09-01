@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.8.6';
+  const VERSION = '0.8.7';
 
   const EFFORT_SCALE_MAX = 5;
   // The readable labels mirror exactly what the current effort UI shows.
@@ -188,6 +188,48 @@
         ['Remo con mancuernas', 'Tira fuerte.'],
         ['Puente de glúteo', 'Aprieta arriba.'],
         ['Press de hombros', 'Último empujón.']
+      ]
+    },
+    {
+      name: 'Fuerza P1 · Cuerpo completo',
+      subtitle: 'PESO CORPORAL · 2 vueltas · repeticiones · ≈ 19 min',
+      equipment: 'Solo peso corporal · esterilla opcional',
+      warmup: 60,
+      roundBreak: 60,
+      changeDuration: 25,
+      workDuration: 45,
+      fixedRounds: 2,
+      repBased: true,
+      exercises: [
+        ['Sentadillas lentas', '12 repeticiones. Baja con control y sube estable.'],
+        ['Flexiones', '6–10 repeticiones. Para cuando la técnica deje de ser limpia.'],
+        ['Zancada atrás derecha', '8 repeticiones con la pierna derecha.', { duration: 40 }],
+        ['Zancada atrás izquierda', '8 repeticiones con la pierna izquierda.', { duration: 40 }],
+        ['Puente de glúteo', '15 repeticiones. Aprieta arriba.', { duration: 45 }],
+        ['Boca abajo: brazos largos → codos', '10–12 repeticiones. Lleva los codos hacia las costillas; piernas y tronco tranquilos.', { duration: 45 }],
+        ['Plancha de antebrazos', '20–30 segundos. Abdomen firme; pulsa SALTAR cuando termines.', { duration: 30 }],
+        ['Dead bug · contrarios', '8 por lado. Brazo y pierna contrarios; lumbar estable.', { duration: 50 }]
+      ]
+    },
+    {
+      name: 'Fuerza P2 · Cuerpo completo',
+      subtitle: 'PESO CORPORAL · 2 vueltas · repeticiones · ≈ 19 min',
+      equipment: 'Solo peso corporal · esterilla opcional',
+      warmup: 60,
+      roundBreak: 60,
+      changeDuration: 25,
+      workDuration: 45,
+      fixedRounds: 2,
+      repBased: true,
+      exercises: [
+        ['Sentadilla sumo', '12 repeticiones. Rodillas siguen la línea de los pies.'],
+        ['Flexiones con codos cerca', '5–8 repeticiones. Codos cerca del cuerpo y técnica limpia.'],
+        ['Zancadas atrás alternas', '8 por lado. Alterna con control.', { duration: 50 }],
+        ['Puente marchado', '8 por lado. Mantén la pelvis estable.', { duration: 50 }],
+        ['Boca abajo: brazos en W', '10–12 repeticiones. Junta escápulas sin levantar piernas ni tronco.'],
+        ['Plancha lateral derecha', '20 segundos. Cadera arriba; pulsa SALTAR al terminar.', { duration: 30 }],
+        ['Plancha lateral izquierda', '20 segundos. Cadera arriba; pulsa SALTAR al terminar.', { duration: 30 }],
+        ['Shoulder taps', '8 por lado. Plancha alta tocando hombros; cadera quieta.', { duration: 45 }]
       ]
     }
   ];
@@ -396,6 +438,7 @@
 
   const sets = () => mode === 'strength' ? STRENGTH : BIKE;
   const currentRoutine = () => sets()[selectedIndex];
+  const currentRoundCount = (routine = currentRoutine()) => Number(routine?.fixedRounds) || rounds;
 
   function activeWorkoutPhase() {
     if (workoutFinished && pendingWorkoutEntry) return 'complete';
@@ -607,13 +650,37 @@
     else if(minutes>=25&&equipment.includes('dumbbells')&&['lose_fat','tone','strength','maintain'].includes(source.goal)&&source.experience!=='beginner'){
       const first=out.findIndex((item)=>item.mode==='strength');if(first>=0)out[first]=e('strength','Full Body · Completa');
     }
-    if(!equipment.includes('dumbbells'))out=out.map((item)=>item.mode==='strength'?e('strength','Core HIIT'):item);
+    if(!equipment.includes('dumbbells')){
+      const bodyweight=['Fuerza P1 · Cuerpo completo','Fuerza P2 · Cuerpo completo'];let b=0;
+      out=out.map((item)=>item.mode==='strength'?e('strength',bodyweight[(b++)%bodyweight.length]):item);
+    }
     return out.slice(0,Math.max(2,Math.min(5,Number(source.days)||4)));
   }
 
   function weekStartDate(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d;}
   function workoutsThisWeek(){const start=weekStartDate();return progressData.workouts.filter((w)=>parseLocalDate(w.date)>=start).sort((a,b)=>String(a.timestamp||a.date).localeCompare(String(b.timestamp||b.date)));}
-  function nextPlanRecommendation(){const plan=buildWeeklyPlan(),done=Math.min(workoutsThisWeek().length,plan.length);return {plan,done,item:done<plan.length?plan[done]:null};}
+  function workoutMode(workout){
+    if(workout?.mode==='strength'||workout?.mode==='bike')return workout.mode;
+    const routine=String(workout?.routine||'');
+    if(/^BICI\b/i.test(routine))return 'bike';
+    return routine ? 'strength' : null;
+  }
+  function matchWeeklyPlan(plan,workouts=workoutsThisWeek()){
+    const matched=new Set();
+    workouts.forEach((workout)=>{
+      const modeName=workoutMode(workout);if(!modeName)return;
+      let index=plan.findIndex((item,i)=>!matched.has(i)&&item.mode===modeName&&item.routine===workout.routine);
+      if(index<0)index=plan.findIndex((item,i)=>!matched.has(i)&&item.mode===modeName);
+      if(index>=0)matched.add(index);
+    });
+    const matchedIndices=[...matched].sort((a,b)=>a-b);
+    const nextIndex=plan.findIndex((_,i)=>!matched.has(i));
+    return {matchedIndices,done:matchedIndices.length,nextIndex};
+  }
+  function nextPlanRecommendation(){
+    const plan=buildWeeklyPlan(),match=matchWeeklyPlan(plan);
+    return {plan,done:match.done,matchedIndices:match.matchedIndices,nextIndex:match.nextIndex,item:match.nextIndex>=0?plan[match.nextIndex]:null};
+  }
   function horizonDate(){if(!profile)return null;const d=parseLocalDate(profile.goalStartedAt||profile.createdAt||isoToday());d.setMonth(d.getMonth()+(Number(profile.timeframe)||3));return Number.isNaN(d.getTime())?parseLocalDate(isoToday()):d;}
   function nextReviewDate(){if(!profile)return null;const start=parseLocalDate(profile.goalStartedAt||profile.createdAt||isoToday()),now=new Date();now.setHours(12,0,0,0);let r=new Date(start);let guard=0;while(r<=now&&guard<240){r.setDate(r.getDate()+28);guard++;}return Number.isNaN(r.getTime())?new Date(now.getTime()+28*86400000):r;}
 
@@ -692,7 +759,8 @@
         els.todayRecommendation.innerHTML='<h3>⚠️ No tengo plan todavía</h3><p>Algo del perfil no cuadra. Entra en PERFIL y revisa el cuestionario; no voy a inventarme una rutina a ciegas.</p>';
         els.openRecommendation.hidden=true;
       }
-      els.todayWeekPlan.innerHTML=(rec?.plan||[]).map((item,index)=>{const done=index<(rec?.done||0);return `<div class="plan-item${done?' done':''}"><span class="plan-index">${index+1}</span><div><strong>${item.mode==='bike'?'🚲':'🔥'} ${item.routine}</strong><span>${item.mode==='bike'?'Cardio guiado':'Fuerza guiada'}</span></div><em>${done?'✓':'·'}</em></div>`;}).join('')||'<p class="muted">Todavía no hay sesiones calculadas.</p>';
+      const matchedPlanIndices=new Set(rec?.matchedIndices||[]);
+      els.todayWeekPlan.innerHTML=(rec?.plan||[]).map((item,index)=>{const done=matchedPlanIndices.has(index);return `<div class="plan-item${done?' done':''}"><span class="plan-index">${index+1}</span><div><strong>${item.mode==='bike'?'🚲':'🔥'} ${item.routine}</strong><span>${item.mode==='bike'?'Cardio guiado':'Fuerza guiada'}</span></div><em>${done?'✓':'·'}</em></div>`;}).join('')||'<p class="muted">Todavía no hay sesiones calculadas.</p>';
 
       const energy=estimateEnergy();
       if(profile.nutritionMode==='off')els.todayNutritionSummary.innerHTML='<p class="muted">Seguimiento pausado. Perfecto: no vas a convertir cada plato en una hoja de Excel. Si algún día quieres datos, lo activas desde PERFIL.</p>';
@@ -879,15 +947,16 @@
 
   function strengthDurationSeconds(routine, count) {
     const n = routine.exercises.length;
-    const work = n * 30 * count;
-    const betweenExercises = Math.max(0, n - 1) * 10 * count;
+    const workPerRound = routine.exercises.reduce((sum, exercise) => sum + Number(exercise?.[2]?.duration || routine.workDuration || 30), 0);
+    const work = workPerRound * count;
+    const betweenExercises = Math.max(0, n - 1) * Number(routine.changeDuration ?? 10) * count;
     const roundBreaks = Math.max(0, count - 1) * (routine.roundBreak || 30);
     return (routine.warmup || 60) + work + betweenExercises + roundBreaks;
   }
 
   function updateDuration() {
     if (mode !== 'strength') return;
-    const total = strengthDurationSeconds(currentRoutine(), rounds);
+    const total = strengthDurationSeconds(currentRoutine(), currentRoundCount());
     const min = Math.floor(total / 60);
     const sec = total % 60;
     els.duration.textContent = `≈ ${min}:${String(sec).padStart(2, '0')}`;
@@ -916,9 +985,13 @@
       const visualNote = visualCount === routine.exercises.length
         ? '<p class="visual-ready">✨ Guía visual completa.</p>'
         : '';
-      els.detail.innerHTML = `<strong>${routine.name}</strong><p>30 s trabajo · 10 s cambio · ${routine.roundBreak}s entre rondas · ${routine.warmup}s de calentamiento.</p><p class="material-line">🧰 ${routine.equipment}</p>${visualNote}<div class="exercise-preview">${chips}</div>`;
-      els.roundPicker.hidden = false;
-      updateRoundButtons();
+      const activeRounds=currentRoundCount(routine);
+      const timingText=routine.repBased
+        ? `${activeRounds} vueltas · trabaja por repeticiones · ${routine.changeDuration||25} s de cambio máximo · ${routine.roundBreak||60} s entre vueltas · pulsa SALTAR cuando acabes antes.`
+        : `30 s trabajo · 10 s cambio · ${routine.roundBreak}s entre rondas · ${routine.warmup}s de calentamiento.`;
+      els.detail.innerHTML = `<strong>${routine.name}</strong><p>${timingText}</p><p class="material-line">🧰 ${routine.equipment}</p>${visualNote}<div class="exercise-preview">${chips}</div>`;
+      els.roundPicker.hidden = Boolean(routine.fixedRounds);
+      if (!routine.fixedRounds) updateRoundButtons();
       updateDuration();
       preloadRoutineVisuals(routine);
     } else {
@@ -957,18 +1030,20 @@
   function buildStrengthSequence(routine) {
     const steps = warmupSteps(routine);
     let ordinal = 0;
-    const totalWork = routine.exercises.length * rounds;
+    const routineRounds = currentRoundCount(routine);
+    const totalWork = routine.exercises.length * routineRounds;
 
-    for (let round = 1; round <= rounds; round++) {
-      routine.exercises.forEach(([name, cue], exerciseIndex) => {
+    for (let round = 1; round <= routineRounds; round++) {
+      routine.exercises.forEach(([name, cue, meta], exerciseIndex) => {
         ordinal += 1;
-        steps.push({ type: 'work', duration: 30, name, cue, round, ordinal, totalWork });
+        const duration = Number(meta?.duration || routine.workDuration || 30);
+        steps.push({ type: 'work', duration, name, cue, round, ordinal, totalWork, repBased: Boolean(routine.repBased) });
         if (exerciseIndex < routine.exercises.length - 1) {
           const nextName = routine.exercises[exerciseIndex + 1][0];
-          steps.push({ type: 'rest', duration: 10, name: 'Cambio', cue: `Siguiente: ${nextName}`, nextName, round });
+          steps.push({ type: 'rest', duration: Number(routine.changeDuration ?? 10), name: 'Cambio', cue: `Siguiente: ${nextName}`, nextName, round });
         }
       });
-      if (round < rounds) {
+      if (round < routineRounds) {
         const nextName = routine.exercises[0][0];
         steps.push({ type: 'roundRest', duration: routine.roundBreak || 30, name: 'Entre rondas', cue: `Ronda ${round} hecha. Bebe, recolócate y recupera.`, nextName, round });
       }
@@ -1055,6 +1130,8 @@
     lastAnnouncedSecond = null;
     if (step.type === 'warmup') {
       speak(`${step.name}. ${step.cue}`, { interrupt: true, rate: 0.96 });
+    } else if (step.type === 'work' && step.repBased) {
+      speak(`${step.name}. ${step.cue}`, { interrupt: true, rate: 0.96 });
     } else if (step.type === 'rest') {
       speak(`Cambio. Siguiente: ${step.nextName}.`, { interrupt: true, rate: 0.98 });
     } else if (step.type === 'roundRest') {
@@ -1114,14 +1191,14 @@
 
     els.playerRoutine.textContent = currentRoutine().name;
     els.stage.dataset.phase = step.type;
-    els.phase.textContent = step.type === 'work' ? 'TRABAJO' : step.type === 'rest' ? 'CAMBIO' : step.type === 'roundRest' ? 'ENTRE RONDAS' : step.type === 'bike' ? 'BICI' : 'CALENTAMIENTO';
+    els.phase.textContent = step.type === 'work' ? (step.repBased ? 'REPETICIONES' : 'TRABAJO') : step.type === 'rest' ? 'CAMBIO' : step.type === 'roundRest' ? 'ENTRE RONDAS' : step.type === 'bike' ? 'BICI' : 'CALENTAMIENTO';
     els.exercise.textContent = (step.type === 'rest' || step.type === 'roundRest') ? step.nextName : step.name;
     renderVisual(step);
-    els.coach.textContent = step.type === 'work' ? `${step.cue} · A TOPE.` : step.cue;
+    els.coach.textContent = step.type === 'work' ? (step.repBased ? step.cue : `${step.cue} · A TOPE.`) : step.cue;
     els.next.textContent = nextDescription();
 
     if (step.type === 'work') {
-      els.playerRound.textContent = `Ronda ${step.round} de ${rounds}`;
+      els.playerRound.textContent = `Ronda ${step.round} de ${currentRoundCount()}`;
       els.progressText.textContent = `${step.ordinal} / ${step.totalWork}`;
       els.progress.style.width = `${((step.ordinal - 1) / step.totalWork) * 100}%`;
     } else if (step.type === 'bike') {
@@ -1133,7 +1210,7 @@
       els.progressText.textContent = '';
     } else {
       els.playerRound.textContent = step.type === 'roundRest' ? 'Recupera' : `Ronda ${step.round}`;
-      if (step.type === 'roundRest') els.progressText.textContent = `Ronda ${step.round} / ${rounds}`;
+      if (step.type === 'roundRest') els.progressText.textContent = `Ronda ${step.round} / ${currentRoundCount()}`;
     }
     if (announce) announceStep(step);
   }
@@ -1203,7 +1280,7 @@
     const actualMinutes = Math.max(1, Math.round(realActiveMs / 60000));
     return {
       id: uid(), date: isoToday(), timestamp: new Date().toISOString(), mode,
-      routine: currentRoutine().name, rounds: mode === 'strength' ? rounds : null,
+      routine: currentRoutine().name, rounds: mode === 'strength' ? currentRoundCount() : null,
       minutes: actualMinutes, effort: pendingWorkoutEffort
     };
   }
@@ -1216,7 +1293,8 @@
     els.library.hidden = true;
     els.player.hidden = true; els.complete.hidden = false;
     els.completeTitle.textContent = '¿Lo damos por hecho?';
-    els.completeSummary.textContent = `Has llegado al final: ${currentRoutine().name}${mode === 'strength' ? ` · ${rounds} ronda${rounds === 1 ? '' : 's'}` : ''}. Si lo has hecho, guárdalo. Si estabas trasteando, no nos hagamos trampas al solitario.`;
+    const completedRounds=currentRoundCount();
+    els.completeSummary.textContent = `Has llegado al final: ${currentRoutine().name}${mode === 'strength' ? ` · ${completedRounds} ronda${completedRounds === 1 ? '' : 's'}` : ''}. Si lo has hecho, guárdalo. Si estabas trasteando, no nos hagamos trampas al solitario.`;
     els.effortPicker.hidden = false;
     els.confirmWorkout.hidden = false;
     els.discardWorkout.hidden = false;
