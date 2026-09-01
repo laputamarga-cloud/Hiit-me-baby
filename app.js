@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.8.7';
+  const VERSION = '0.8.8';
 
   const EFFORT_SCALE_MAX = 5;
   // The readable labels mirror exactly what the current effort UI shows.
@@ -192,44 +192,36 @@
     },
     {
       name: 'Fuerza P1 · Cuerpo completo',
-      subtitle: 'PESO CORPORAL · 2 vueltas · repeticiones · ≈ 19 min',
+      subtitle: 'HIIT · PESO CORPORAL · 8 ejercicios · ≈ 17:30 con 3 rondas',
       equipment: 'Solo peso corporal · esterilla opcional',
       warmup: 60,
-      roundBreak: 60,
-      changeDuration: 25,
-      workDuration: 45,
-      fixedRounds: 2,
-      repBased: true,
+      roundBreak: 30,
       exercises: [
-        ['Sentadillas lentas', '12 repeticiones. Baja con control y sube estable.'],
-        ['Flexiones', '6–10 repeticiones. Para cuando la técnica deje de ser limpia.'],
-        ['Zancada atrás derecha', '8 repeticiones con la pierna derecha.', { duration: 40 }],
-        ['Zancada atrás izquierda', '8 repeticiones con la pierna izquierda.', { duration: 40 }],
-        ['Puente de glúteo', '15 repeticiones. Aprieta arriba.', { duration: 45 }],
-        ['Boca abajo: brazos largos → codos', '10–12 repeticiones. Lleva los codos hacia las costillas; piernas y tronco tranquilos.', { duration: 45 }],
-        ['Plancha de antebrazos', '20–30 segundos. Abdomen firme; pulsa SALTAR cuando termines.', { duration: 30 }],
-        ['Dead bug · contrarios', '8 por lado. Brazo y pierna contrarios; lumbar estable.', { duration: 50 }]
+        ['Sentadillas lentas', 'Baja con control y sube con ritmo. Sin rebotes.'],
+        ['Flexiones', 'Haz todas las limpias que salgan. Si la técnica se rompe, adapta.'],
+        ['Zancada atrás derecha', 'Pierna derecha. Mantén el tronco estable y el ritmo vivo.'],
+        ['Zancada atrás izquierda', 'Pierna izquierda. Mantén el tronco estable y el ritmo vivo.'],
+        ['Puente de glúteo', 'Sube, aprieta arriba y vuelve a bajar sin perder tensión.'],
+        ['Boca abajo: brazos largos → codos', 'Lleva los codos hacia las costillas. Piernas y tronco tranquilos: no es Superman.'],
+        ['Plancha de antebrazos', 'Abdomen y glúteos activos. Mantén una línea sólida.'],
+        ['Dead bug · contrarios', 'Alterna brazo y pierna contrarios. Lumbar estable y movimiento continuo.']
       ]
     },
     {
       name: 'Fuerza P2 · Cuerpo completo',
-      subtitle: 'PESO CORPORAL · 2 vueltas · repeticiones · ≈ 19 min',
+      subtitle: 'HIIT · PESO CORPORAL · 8 ejercicios · ≈ 17:30 con 3 rondas',
       equipment: 'Solo peso corporal · esterilla opcional',
       warmup: 60,
-      roundBreak: 60,
-      changeDuration: 25,
-      workDuration: 45,
-      fixedRounds: 2,
-      repBased: true,
+      roundBreak: 30,
       exercises: [
-        ['Sentadilla sumo', '12 repeticiones. Rodillas siguen la línea de los pies.'],
-        ['Flexiones con codos cerca', '5–8 repeticiones. Codos cerca del cuerpo y técnica limpia.'],
-        ['Zancadas atrás alternas', '8 por lado. Alterna con control.', { duration: 50 }],
-        ['Puente marchado', '8 por lado. Mantén la pelvis estable.', { duration: 50 }],
-        ['Boca abajo: brazos en W', '10–12 repeticiones. Junta escápulas sin levantar piernas ni tronco.'],
-        ['Plancha lateral derecha', '20 segundos. Cadera arriba; pulsa SALTAR al terminar.', { duration: 30 }],
-        ['Plancha lateral izquierda', '20 segundos. Cadera arriba; pulsa SALTAR al terminar.', { duration: 30 }],
-        ['Shoulder taps', '8 por lado. Plancha alta tocando hombros; cadera quieta.', { duration: 45 }]
+        ['Sentadilla sumo', 'Ritmo vivo. Rodillas siguen la línea de los pies.'],
+        ['Flexiones con codos cerca', 'Codos cerca del cuerpo. Mantén la técnica y adapta si hace falta.'],
+        ['Zancadas atrás alternas', 'Alterna lados sin parar. Paso estable y tronco controlado.'],
+        ['Puente marchado', 'Cadera arriba y estable mientras alternas piernas.'],
+        ['Boca abajo: brazos en W', 'Junta escápulas y vuelve. Piernas y tronco tranquilos.'],
+        ['Plancha lateral derecha', 'Cadera arriba. Mantén el cuerpo alineado durante todo el intervalo.'],
+        ['Plancha lateral izquierda', 'Cadera arriba. Mantén el cuerpo alineado durante todo el intervalo.'],
+        ['Shoulder taps', 'Plancha alta tocando hombros. Cadera lo más quieta posible.']
       ]
     }
   ];
