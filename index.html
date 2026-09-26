@@ -25,7 +25,7 @@
     <section id="onboardingScreen" class="onboarding-screen" hidden>
       <div class="onboarding-top">
         <div><p class="eyebrow">TU PUNTO DE PARTIDA</p><h2>Vamos a conocerte</h2></div>
-        <span id="onboardingStepLabel" class="local-pill">1 / 12</span>
+        <span id="onboardingStepLabel" class="local-pill">1 / 13</span>
       </div>
       <div class="onboarding-progress" aria-hidden="true"><div id="onboardingProgressBar"></div></div>
       <p id="onboardingLead" class="onboarding-lead">No es un examen. Pero si aquí nos contamos películas, luego no protestes cuando el plan no cuadre.</p>
@@ -141,7 +141,28 @@
         </section>
 
         <section class="onboarding-step" data-onboarding-step="11" hidden>
-          <p class="eyebrow">PASO 12</p><h3>¿Cómo quieres tratar la alimentación?</h3>
+          <p class="eyebrow">PASO 12</p><h3>Diseña tu semana real</h3>
+          <p class="step-copy">Elige qué días entrenas y qué haces. Los días de descanso también forman parte del plan.</p>
+          <div class="schedule-grid">
+            <label class="schedule-row"><span>Lunes</span><select name="dayMode1"><option value="rest">Descanso</option><option value="strength">Fuerza</option><option value="bike">Bici</option></select></label>
+            <label class="schedule-row"><span>Martes</span><select name="dayMode2"><option value="rest">Descanso</option><option value="strength">Fuerza</option><option value="bike">Bici</option></select></label>
+            <label class="schedule-row"><span>Miércoles</span><select name="dayMode3"><option value="rest">Descanso</option><option value="strength">Fuerza</option><option value="bike">Bici</option></select></label>
+            <label class="schedule-row"><span>Jueves</span><select name="dayMode4"><option value="rest">Descanso</option><option value="strength">Fuerza</option><option value="bike">Bici</option></select></label>
+            <label class="schedule-row"><span>Viernes</span><select name="dayMode5"><option value="rest">Descanso</option><option value="strength">Fuerza</option><option value="bike">Bici</option></select></label>
+            <label class="schedule-row"><span>Sábado</span><select name="dayMode6"><option value="rest">Descanso</option><option value="strength">Fuerza</option><option value="bike">Bici</option></select></label>
+            <label class="schedule-row"><span>Domingo</span><select name="dayMode0"><option value="rest">Descanso</option><option value="strength">Fuerza</option><option value="bike">Bici</option></select></label>
+          </div>
+          <p class="step-copy schedule-question">¿Cómo suele evolucionar tu energía?</p>
+          <div class="choice-grid three">
+            <label class="choice-card"><input type="radio" name="energyTrend" value="steady" required><span><b>Estable</b></span></label>
+            <label class="choice-card"><input type="radio" name="energyTrend" value="decreasing" required><span><b>Va bajando</b></span></label>
+            <label class="choice-card"><input type="radio" name="energyTrend" value="variable" required><span><b>Imprevisible</b></span></label>
+          </div>
+          <p class="tiny-note">Si marcas bici, recuerda incluirla también en el material disponible.</p>
+        </section>
+
+        <section class="onboarding-step" data-onboarding-step="12" hidden>
+          <p class="eyebrow">PASO 13</p><h3>¿Cómo quieres tratar la alimentación?</h3>
           <div class="choice-stack">
             <label class="choice-card"><input type="radio" name="nutritionMode" value="off" required><span><b>Sin seguimiento</b><small>No quiero pensar en calorías ni registrar comidas.</small></span></label>
             <label class="choice-card"><input type="radio" name="nutritionMode" value="orientation" required><span><b>Solo orientación</b><small>Quiero saber un rango aproximado de energía y proteína.</small></span></label>
@@ -312,6 +333,24 @@
       <section id="profilePanel" class="profile-panel" hidden>
         <div class="section-heading"><div><p class="eyebrow">PERFIL Y OBJETIVO</p><h2>Tu punto de partida</h2></div><span class="local-pill">Editable</span></div>
         <section id="profileSummaryCard" class="profile-summary-card"></section>
+        <form id="profileScheduleForm" class="profile-schedule-form">
+          <section class="profile-summary-card">
+            <p class="eyebrow">TU SEMANA</p><h3>Días y actividad</h3>
+            <p class="muted">Esto manda sobre las recomendaciones de HOY. Descanso, fuerza o bici: sin horarios universales sacados de la manga.</p>
+            <div class="schedule-grid">
+              <label class="schedule-row"><span>Lunes</span><select name="profileDay1"><option value="rest">Descanso</option><option value="strength">Fuerza</option><option value="bike">Bici</option></select></label>
+              <label class="schedule-row"><span>Martes</span><select name="profileDay2"><option value="rest">Descanso</option><option value="strength">Fuerza</option><option value="bike">Bici</option></select></label>
+              <label class="schedule-row"><span>Miércoles</span><select name="profileDay3"><option value="rest">Descanso</option><option value="strength">Fuerza</option><option value="bike">Bici</option></select></label>
+              <label class="schedule-row"><span>Jueves</span><select name="profileDay4"><option value="rest">Descanso</option><option value="strength">Fuerza</option><option value="bike">Bici</option></select></label>
+              <label class="schedule-row"><span>Viernes</span><select name="profileDay5"><option value="rest">Descanso</option><option value="strength">Fuerza</option><option value="bike">Bici</option></select></label>
+              <label class="schedule-row"><span>Sábado</span><select name="profileDay6"><option value="rest">Descanso</option><option value="strength">Fuerza</option><option value="bike">Bici</option></select></label>
+              <label class="schedule-row"><span>Domingo</span><select name="profileDay0"><option value="rest">Descanso</option><option value="strength">Fuerza</option><option value="bike">Bici</option></select></label>
+            </div>
+            <label class="schedule-energy">Energía durante la semana<select name="profileEnergyTrend"><option value="steady">Suele mantenerse</option><option value="decreasing">Va bajando</option><option value="variable">Es imprevisible</option></select></label>
+            <button class="secondary-button" type="submit">GUARDAR SEMANA</button>
+            <p id="profileScheduleMessage" class="toast" hidden></p>
+          </section>
+        </form>
         <button id="redoOnboardingBtn" class="primary-button" type="button">REVISAR CUESTIONARIO Y PLAN</button>
       </section>
     </section>

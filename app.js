@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.8.10';
+  const VERSION = '0.8.11';
 
   const EFFORT_SCALE_MAX = 5;
   // The readable labels mirror exactly what the current effort UI shows.
@@ -226,11 +226,10 @@
     },
     {
       name: 'Fuerza P3 · Core + estabilidad',
-      subtitle: 'HIIT · SIN MATERIAL · 8 ejercicios · 11:50 · 2 rondas fijas',
+      subtitle: 'HIIT · SIN MATERIAL · 8 ejercicios · 1–3 rondas',
       equipment: 'Solo peso corporal · esterilla opcional',
       warmup: 60,
       roundBreak: 30,
-      fixedRounds: 2,
       workDuration: 30,
       changeDuration: 10,
       exercises: [
@@ -246,11 +245,10 @@
     },
     {
       name: 'Fuerza P4 · Combinada',
-      subtitle: 'HIIT · SIN MATERIAL · 8 ejercicios combinados · 11:50 · 2 rondas fijas',
+      subtitle: 'HIIT · SIN MATERIAL · 8 ejercicios combinados · 1–3 rondas',
       equipment: 'Solo peso corporal · esterilla opcional',
       warmup: 60,
       roundBreak: 30,
-      fixedRounds: 2,
       workDuration: 30,
       changeDuration: 10,
       exercises: [
@@ -448,6 +446,7 @@
     nutritionModePill: $('nutritionModePill'), energyEstimate: $('energyEstimate'), nutritionGuidance: $('nutritionGuidance'),
     auditCard: $('auditCard'), auditStatus: $('auditStatus'), startAudit: $('startAuditBtn'), auditForm: $('auditForm'), auditDate: $('auditDate'), auditHistory: $('auditHistory'),
     profileForm: $('profileForm'), profileMessage: $('profileMessage'), profileSummaryCard: $('profileSummaryCard'), redoOnboarding: $('redoOnboardingBtn'),
+    profileScheduleForm: $('profileScheduleForm'), profileScheduleMessage: $('profileScheduleMessage'),
     onboarding: $('onboardingScreen'), onboardingStepLabel: $('onboardingStepLabel'), onboardingProgressBar: $('onboardingProgressBar'), onboardingLead: $('onboardingLead'),
     onboardingBack: $('onboardingBackBtn'), onboardingNext: $('onboardingNextBtn'), onboardingNav: $('onboardingNav'), onboardingResult: $('onboardingResult'),
     onboardingResultContent: $('onboardingResultContent'), onboardingSave: $('onboardingSaveBtn'), onboardingAdjust: $('onboardingAdjustBtn'), onboardingCancel: $('onboardingCancelBtn')
@@ -649,6 +648,19 @@
   function experienceLabel(value){return ({beginner:'Empezando o retomando',some:'Entreno ocasional',regular:'Entreno regular'})[value]||'Sin definir';}
   function activityLabel(value){return ({seated:'Mayormente sentado/a',breaks:'Descansos activos',standing:'De pie / en movimiento',low:'Mayormente sentado/a',light:'Descansos activos',moderate:'De pie / en movimiento',high:'Muy activo/a'})[value]||'Sin definir';}
   function deriveSchedule(hours){const h=Number(hours)||2;if(h<=1)return {days:2,sessionMinutes:20};if(h<=1.5)return {days:3,sessionMinutes:20};if(h<=2)return {days:4,sessionMinutes:20};return {days:5,sessionMinutes:25};}
+  const WEEKDAYS={0:'Domingo',1:'Lunes',2:'Martes',3:'Miércoles',4:'Jueves',5:'Viernes',6:'Sábado'};
+  function normalizeWeeklySchedule(value){
+    const out={};
+    for(let day=0;day<=6;day++){const modeName=value?.[day]||value?.[String(day)]||'rest';out[day]=['strength','bike'].includes(modeName)?modeName:'rest';}
+    return out;
+  }
+  function scheduleFromFormData(fd,prefix='dayMode'){
+    const out={};for(let day=0;day<=6;day++)out[day]=String(fd.get(`${prefix}${day}`)||'rest');return normalizeWeeklySchedule(out);
+  }
+  function activeScheduleDays(schedule){return Object.values(normalizeWeeklySchedule(schedule)).filter((value)=>value!=='rest').length;}
+  function scheduleSummary(schedule){
+    return Object.entries(normalizeWeeklySchedule(schedule)).filter(([,modeName])=>modeName!=='rest').sort(([a],[b])=>(Number(a)||7)-(Number(b)||7)).map(([day,modeName])=>`${WEEKDAYS[day]} ${modeName==='bike'?'bici':'fuerza'}`).join(' · ');
+  }
 
   function estimateEnergy(source=profile) {
     if (!source || source.sex === 'skip' || source.energySafety === 'skip') return null;
@@ -692,13 +704,35 @@
     if(!source) return [];
     const e=(modeName,routine,day=null,label='')=>({mode:modeName,routine,day,label});
     const equipment=Array.isArray(source.equipment)?source.equipment:[];
-    if(equipment.includes('bike')){
-      return [
-        e('strength','Fuerza P4 · Combinada',1,'Lunes · energía alta'),
-        e('bike','BICI 20 · Intervalos',2,'Martes · intensidad'),
-        e('bike','BICI 20 · Base',4,'Jueves · ritmo sostenible'),
-        e('strength','Fuerza P3 · Core + estabilidad',5,'Viernes · control')
-      ];
+    const explicitSchedule=normalizeWeeklySchedule(source.weeklySchedule);
+    const scheduledDays=Object.entries(explicitSchedule).filter(([,modeName])=>modeName!=='rest').map(([day,modeName])=>({day:Number(day),mode:modeName})).sort((a,b)=>(a.day||7)-(b.day||7));
+    if(scheduledDays.length){
+      const decreasing=source.energyTrend==='decreasing';
+      const bodyweightStrength=decreasing
+        ? ['Fuerza P4 · Combinada','Fuerza P1 · Cuerpo completo','Fuerza P2 · Cuerpo completo','Fuerza P3 · Core + estabilidad']
+        : ['Fuerza P1 · Cuerpo completo','Fuerza P2 · Cuerpo completo','Fuerza P4 · Combinada','Fuerza P3 · Core + estabilidad'];
+      const equippedStrength={
+        lose_fat:['Full Body A','Full Body B','Core HIIT'],tone:['Full Body A','Glúteo + posterior','Upper Body'],
+        strength:['Full Body · Completa','Upper Body','Full Body B'],endurance:['Full Body A','Core HIIT','Upper Body'],
+        maintain:['Full Body A','Full Body B','Core HIIT'],habit:['Exprés 6','Full Body A','Core HIIT']
+      };
+      const strengthNames=equipment.includes('dumbbells')?(equippedStrength[source.goal]||equippedStrength.tone):bodyweightStrength;
+      const bikeNames=decreasing?['BICI 20 · Intervalos','BICI 20 · Base','BICI 12 · No negociable']:['BICI 20 · Base','BICI 20 · Intervalos','BICI 24 · Pirámide'];
+      let strengthIndex=0,bikeIndex=0;
+      const strengthTotal=scheduledDays.filter((item)=>item.mode==='strength').length;
+      return scheduledDays.map((item)=>{
+        const dayName=WEEKDAYS[item.day];
+        if(item.mode==='bike'){
+          const routine=bikeNames[bikeIndex%bikeNames.length],position=bikeIndex++;
+          const note=decreasing?(position===0?'intensidad':'ritmo sostenible'):'cardio guiado';
+          return e('bike',routine,item.day,`${dayName} · ${note}`);
+        }
+        let routine=strengthNames[strengthIndex%strengthNames.length];
+        if(decreasing&&strengthTotal===2&&strengthIndex===1&&!equipment.includes('dumbbells'))routine='Fuerza P3 · Core + estabilidad';
+        const note=decreasing?(strengthIndex===0?'energía alta':strengthIndex===strengthTotal-1?'control':'ritmo medio'):'fuerza guiada';
+        strengthIndex++;
+        return e('strength',routine,item.day,`${dayName} · ${note}`);
+      });
     }
     const plans={
       lose_fat:[e('strength','Full Body A'),e('bike','BICI 20 · Base'),e('strength','Full Body B'),e('bike','BICI 20 · Intervalos'),e('strength','Upper Body')],
@@ -767,10 +801,10 @@
       ? 'Entrenamiento de hoy hecho. Recupera: sumar por sumar no mejora el plan.'
       : 'Hoy toca descanso. La energía también se entrena protegiéndola: paseo o movilidad suave solo si te apetece.';
     if(!rec.item)return `Bien. ${rec.plan.length}/${rec.plan.length}. Sin confeti: has hecho lo que dijiste que ibas a hacer. La semana que viene, repetimos.`;
-    if(rec.item.day===5)return 'Viernes: menos batería, más control. Dos rondas limpias; no necesitas perseguir el lunes a estas alturas de la semana.';
-    if(rec.item.day===4)return 'Jueves: bici base, sostenible. Guarda un poco de gasolina para la fuerza de mañana.';
-    if(rec.item.day===2)return 'Martes: intervalos de bici mientras la energía sigue alta. Fuerte no significa desordenado.';
-    if(rec.item.day===1)return 'Lunes: aprovecha la mejor energía de la semana para la rutina combinada. Dos rondas, técnica limpia.';
+    if(profile?.energyTrend==='decreasing'&&rec.item.routine==='Fuerza P3 · Core + estabilidad')return `${WEEKDAYS[rec.item.day]||'Hoy'}: menos batería, más control. Elige las rondas que puedas hacer limpias; no necesitas perseguir la energía del principio de semana.`;
+    if(profile?.energyTrend==='decreasing'&&rec.item.routine==='Fuerza P4 · Combinada')return `${WEEKDAYS[rec.item.day]||'Hoy'}: aprovecha la energía más alta para la rutina combinada. Tú eliges las rondas; la técnica sigue mandando.`;
+    if(rec.item.routine==='BICI 20 · Intervalos')return `${WEEKDAYS[rec.item.day]||'Hoy'}: intervalos de bici. Fuerte no significa desordenado.`;
+    if(rec.item.routine==='BICI 20 · Base')return `${WEEKDAYS[rec.item.day]||'Hoy'}: bici base, sostenible y sin vaciar el depósito.`;
     if(rec.item.routine==='BICI 12 · No negociable')return 'Doce minutos. No me vendas que no los tienes.';
     const gap=daysSinceLastWorkout();
     if(gap!==null&&gap>=3&&rec.done===0)return `Llevas ${gap} días sin registrar un entrenamiento. No es una tragedia. Convertirlo en ${gap+1} ya empieza a parecer una decisión. Hoy toca esto.`;
@@ -822,7 +856,7 @@
       const safeNote=String(profile.goalNote||'').replace(/[<>]/g,'');
       const objective=objectiveSnapshot();
       const objectiveText=objectiveSummary();
-      const daysTarget=Math.max(2,Math.min(5,Number(profile.days)||4));
+      const daysTarget=Math.max(2,Math.min(7,Number(profile.days)||4));
       els.todayPlanSummary.innerHTML=`<p class="eyebrow">TU OBJETIVO</p><h3>${goalLabel(profile.goal)}</h3><p><strong>${objectiveText}</strong> · horizonte ${horizonText}</p><p>${daysTarget} días/semana · ≈ ${profile.weeklyHours||'?'} h/sem · sesiones de ≈ ${Number(profile.sessionMinutes)||20} min${safeNote?` · ${safeNote}`:''}</p><div class="hero-stats"><div class="hero-stat"><strong>${week.length}/${daysTarget}</strong><span>sesiones esta semana</span></div><div class="hero-stat"><strong>${objective?.primary?.progress!=null?`${Math.round(objective.primary.progress)}%`:'4 sem'}</strong><span>${objective?.primary?'avance hacia meta':'próxima revisión'}</span></div><div class="hero-stat"><strong>${strength+bike}m</strong><span>entrenamiento</span></div></div>`;
 
       const rec=nextPlanRecommendation();
@@ -833,7 +867,8 @@
         els.openRecommendation.hidden=false;
         els.openRecommendation.disabled=false;
       }else if(rec?.rest){
-        els.todayRecommendation.innerHTML=`<h3>🌙 Descanso programado</h3><p>${todayCoachCopy(rec)}</p><small>Lunes y viernes fuerza · martes y jueves bici · miércoles y fin de semana descanso.</small>`;
+        const configured=scheduleSummary(profile.weeklySchedule);
+        els.todayRecommendation.innerHTML=`<h3>🌙 Descanso programado</h3><p>${todayCoachCopy(rec)}</p>${configured?`<small>${configured}.</small>`:''}`;
         els.openRecommendation.hidden=true;
       }else if(rec?.plan?.length){
         els.todayRecommendation.innerHTML=`<h3>✅ Semana hecha</h3><p>${todayCoachCopy(rec)}</p><small>Si haces algo más, que sea porque te apetece: paseo, movilidad o bici suave. No vamos a convertir cumplir el plan en otra obligación.</small>`;
@@ -911,9 +946,10 @@
   function prefillOnboarding(){
     if(!profile)return;const f=els.profileForm.elements;
     const setRadio=(name,value)=>{const input=els.profileForm.querySelector(`input[name="${name}"][value="${value}"]`);if(input)input.checked=true;};
-    ['sex','goal','bodyType','desiredLook','activity','experience','weeklyHours','timeframe','nutritionMode'].forEach((key)=>{let value=profile[key];if(key==='activity')value=mapLegacyActivity(value);if(value!==undefined&&value!==null)setRadio(key,String(value));});
+    ['sex','goal','bodyType','desiredLook','activity','experience','weeklyHours','timeframe','nutritionMode','energyTrend'].forEach((key)=>{let value=profile[key];if(key==='activity')value=mapLegacyActivity(value);if(key==='energyTrend'&&!value)value='steady';if(value!==undefined&&value!==null)setRadio(key,String(value));});
     ['age','height','weight','waist','targetWeight','targetWaist','eventDate','energySafety'].forEach((key)=>{if(f[key])f[key].value=profile[key]??(key==='energySafety'?'none':'');});
     const eq=Array.isArray(profile.equipment)?profile.equipment:[];els.profileForm.querySelectorAll('input[name="equipment"]').forEach((box)=>{box.checked=eq.includes(box.value);});if(f.lowImpact)f.lowImpact.checked=profile.lowImpact!==false;
+    const weeklySchedule=normalizeWeeklySchedule(profile.weeklySchedule);for(let day=0;day<=6;day++){if(f[`dayMode${day}`])f[`dayMode${day}`].value=weeklySchedule[day];}
   }
   function setOnboardingStep(next){
     const steps=[...els.profileForm.querySelectorAll('[data-onboarding-step]')];onboardingStep=Math.max(0,Math.min(steps.length-1,next));
@@ -923,8 +959,10 @@
   function validateOnboardingStep(){const step=els.profileForm.querySelector(`[data-onboarding-step="${onboardingStep}"]`);if(!step)return true;const required=[...step.querySelectorAll('[required]')];for(const input of required){if(!input.checkValidity()){input.reportValidity();return false;}}return true;}
   function collectOnboardingDraft(){
     const fd=new FormData(els.profileForm),age=num(fd.get('age')),height=num(fd.get('height')),weight=num(fd.get('weight')),weeklyHours=num(fd.get('weeklyHours'))||2;
-    if(!age||!height||!weight)return null;const schedule=deriveSchedule(weeklyHours);
-    return {name:profile?.name||'',age,sex:String(fd.get('sex')||'skip'),height,weight,waist:num(fd.get('waist')),activity:String(fd.get('activity')||'seated'),experience:String(fd.get('experience')||'beginner'),bodyType:String(fd.get('bodyType')||'average'),desiredLook:String(fd.get('desiredLook')||'feel'),goal:String(fd.get('goal')||'tone'),timeframe:Number(fd.get('timeframe'))||6,targetWeight:num(fd.get('targetWeight')),targetWaist:num(fd.get('targetWaist')),eventDate:String(fd.get('eventDate')||''),weeklyHours,days:schedule.days,sessionMinutes:schedule.sessionMinutes,equipment:fd.getAll('equipment').map(String),lowImpact:fd.get('lowImpact')==='yes',nutritionMode:String(fd.get('nutritionMode')||'off'),energySafety:String(fd.get('energySafety')||'none'),createdAt:profile?.createdAt||isoToday(),goalStartedAt:isoToday(),activeAudit:profile?.activeAudit||null,onboardingVersion:ONBOARDING_VERSION};
+    if(!age||!height||!weight)return null;const schedule=deriveSchedule(weeklyHours),weeklySchedule=scheduleFromFormData(fd),days=activeScheduleDays(weeklySchedule),equipment=fd.getAll('equipment').map(String);
+    if(days<2){els.profileMessage.textContent='Elige al menos dos días de entrenamiento. El descanso cuenta, pero no puede hacer él solo todo el trabajo.';els.profileMessage.hidden=false;return null;}
+    if(Object.values(weeklySchedule).includes('bike')&&!equipment.includes('bike')){els.profileMessage.textContent='Has programado bici, pero no has marcado que tengas una. Revisa el paso de material.';els.profileMessage.hidden=false;return null;}
+    return {name:profile?.name||'',age,sex:String(fd.get('sex')||'skip'),height,weight,waist:num(fd.get('waist')),activity:String(fd.get('activity')||'seated'),experience:String(fd.get('experience')||'beginner'),bodyType:String(fd.get('bodyType')||'average'),desiredLook:String(fd.get('desiredLook')||'feel'),goal:String(fd.get('goal')||'tone'),timeframe:Number(fd.get('timeframe'))||6,targetWeight:num(fd.get('targetWeight')),targetWaist:num(fd.get('targetWaist')),eventDate:String(fd.get('eventDate')||''),weeklyHours,days,sessionMinutes:schedule.sessionMinutes,equipment,weeklySchedule,energyTrend:String(fd.get('energyTrend')||'steady'),lowImpact:fd.get('lowImpact')==='yes',nutritionMode:String(fd.get('nutritionMode')||'off'),energySafety:String(fd.get('energySafety')||'none'),createdAt:profile?.createdAt||isoToday(),goalStartedAt:isoToday(),activeAudit:profile?.activeAudit||null,onboardingVersion:ONBOARDING_VERSION};
   }
   function projectionFor(source){
     const w=num(source.weight),h=num(source.height),target=num(source.targetWeight);if(!w||!h||!target||target>=w||!['lose_fat','tone'].includes(source.goal))return null;
@@ -1006,7 +1044,18 @@
   function openOnboarding(editing=false){onboardingEditing=editing;els.library.hidden=true;els.onboarding.hidden=false;els.profileForm.hidden=false;els.onboardingResult.hidden=true;els.onboardingNav.hidden=false;els.onboardingLead.textContent='No es un examen. Pero si aquí nos contamos películas, luego no protestes cuando el plan no cuadre.';els.profileForm.reset();if(profile)prefillOnboarding();setOnboardingStep(0);els.onboardingCancel.hidden=!editing;}
   function closeOnboarding(){if(onboardingRequired)return;els.onboarding.hidden=true;els.library.hidden=false;setSection(previousSection||'profile');}
   function saveOnboarding(){if(!onboardingDraft)return;const wasNew=!profile;profile={...onboardingDraft,updatedAt:new Date().toISOString()};saveProfile();onboardingRequired=false;if(wasNew&&progressData.measurements.length===0){progressData.measurements.push({id:uid(),date:isoToday(),weight:profile.weight,waist:profile.waist,hip:null,thigh:null,arm:null});saveProgress();}els.onboarding.hidden=true;els.library.hidden=false;els.mainTabs.hidden=false;setSection('today');renderProgress();}
-  function renderProfile(){if(!profile)return;const e=estimateEnergy(),bmi=bmiFor(currentWeight(),profile.height),plan=buildWeeklyPlan(),objective=objectiveSnapshot();els.profileSummaryCard.innerHTML=`<p class="eyebrow">OBJETIVO ACTUAL</p><h3>${goalLabel(profile.goal)}</h3><p class="objective-big">🎯 ${objectiveSummary()}</p><p class="muted">Plazo: ${profile.timeframe} meses · ${profile.weeklyHours||'—'} h/semana · ${profile.days} sesiones · ${experienceLabel(profile.experience)}</p><div class="profile-summary-grid"><div><span>IMC orientativo</span><strong>${bmi?bmi.toFixed(1):'—'} ${bmi?`· ${bmiLabel(bmi)}`:''}</strong></div><div><span>Avance</span><strong>${objective?.primary?.progress!=null?`${Math.round(objective.primary.progress)} %`:'Se revisa en 4 semanas'}</strong></div><div><span>Mantenimiento</span><strong>${e?`${e.maintenance[0]}–${e.maintenance[1]} kcal`:'Sin cálculo'}</strong></div><div><span>Objetivo energético</span><strong>${e?.target?`${e.target[0]}–${e.target[1]} kcal`:'Sin objetivo automático'}</strong></div></div><div class="plan-list">${plan.map((x,i)=>`<div class="plan-item"><span class="plan-index">${i+1}</span><div><strong>${x.mode==='bike'?'🚲':'🔥'} ${x.routine}</strong>${x.label?`<span>${x.label}</span>`:''}</div><em>·</em></div>`).join('')}</div>`;}
+  function renderProfile(){
+    if(!profile)return;const e=estimateEnergy(),bmi=bmiFor(currentWeight(),profile.height),plan=buildWeeklyPlan(),objective=objectiveSnapshot();
+    els.profileSummaryCard.innerHTML=`<p class="eyebrow">OBJETIVO ACTUAL</p><h3>${goalLabel(profile.goal)}</h3><p class="objective-big">🎯 ${objectiveSummary()}</p><p class="muted">Plazo: ${profile.timeframe} meses · ${profile.weeklyHours||'—'} h/semana · ${profile.days} sesiones · ${experienceLabel(profile.experience)}</p><div class="profile-summary-grid"><div><span>IMC orientativo</span><strong>${bmi?bmi.toFixed(1):'—'} ${bmi?`· ${bmiLabel(bmi)}`:''}</strong></div><div><span>Avance</span><strong>${objective?.primary?.progress!=null?`${Math.round(objective.primary.progress)} %`:'Se revisa en 4 semanas'}</strong></div><div><span>Mantenimiento</span><strong>${e?`${e.maintenance[0]}–${e.maintenance[1]} kcal`:'Sin cálculo'}</strong></div><div><span>Objetivo energético</span><strong>${e?.target?`${e.target[0]}–${e.target[1]} kcal`:'Sin objetivo automático'}</strong></div></div><div class="plan-list">${plan.map((x,i)=>`<div class="plan-item"><span class="plan-index">${i+1}</span><div><strong>${x.mode==='bike'?'🚲':'🔥'} ${x.routine}</strong>${x.label?`<span>${x.label}</span>`:''}</div><em>·</em></div>`).join('')}</div>`;
+    const f=els.profileScheduleForm.elements,schedule=normalizeWeeklySchedule(profile.weeklySchedule);for(let day=0;day<=6;day++)f[`profileDay${day}`].value=schedule[day];f.profileEnergyTrend.value=profile.energyTrend||'steady';
+  }
+  function saveProfileSchedule(event){
+    event.preventDefault();if(!profile)return;const fd=new FormData(els.profileScheduleForm),weeklySchedule=scheduleFromFormData(fd,'profileDay'),days=activeScheduleDays(weeklySchedule);
+    const message=els.profileScheduleMessage;
+    if(days<2){message.textContent='Elige al menos dos días de entrenamiento.';message.hidden=false;return;}
+    if(Object.values(weeklySchedule).includes('bike')&&!profile.equipment?.includes('bike')){message.textContent='Para programar bici, añádela primero al material desde REVISAR CUESTIONARIO Y PLAN.';message.hidden=false;return;}
+    profile={...profile,weeklySchedule,days,energyTrend:String(fd.get('profileEnergyTrend')||'steady'),updatedAt:new Date().toISOString()};saveProfile();message.textContent='Semana guardada. Las recomendaciones ya siguen tus días.';message.hidden=false;renderProfile();renderToday();
+  }
   function setSection(nextSection){
     if(onboardingRequired){openOnboarding(false);return;}if(section!=='profile')previousSection=section;section=nextSection;
     const panels={today:els.todayPanel,training:els.trainingPanel,progress:els.progressPanel,nutrition:els.nutritionPanel,profile:els.profilePanel};Object.entries(panels).forEach(([key,panel])=>{if(panel)panel.hidden=key!==section;});
@@ -1783,6 +1832,7 @@
   els.onboardingAdjust.addEventListener('click',()=>{els.onboardingResult.hidden=true;els.profileForm.hidden=false;els.onboardingNav.hidden=false;setOnboardingStep(Math.max(0,onboardingStep));});
   els.onboardingCancel.addEventListener('click',closeOnboarding);
   els.redoOnboarding.addEventListener('click',()=>openOnboarding(true));
+  els.profileScheduleForm.addEventListener('submit',saveProfileSchedule);
   els.startAudit.addEventListener('click',startAudit);
   els.auditForm.addEventListener('submit',saveAuditCheckin);
   els.auditHistory.addEventListener('click',(event)=>{const button=event.target.closest('[data-audit-delete]');if(button)deleteAuditCheckin(button.dataset.auditDelete);});
