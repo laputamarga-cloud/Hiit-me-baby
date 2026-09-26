@@ -1,4 +1,4 @@
-const CACHE = 'hiit-me-baby-v8-10';
+const CACHE = 'hiit-me-baby-v8-11';
 const CORE = [
   './',
   './index.html',
@@ -6,7 +6,19 @@ const CORE = [
   './app.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
-  './icons/icon-512.png'
+  './icons/icon-512.png',
+  './images/exercises/dead-bug-combo.webp',
+  './images/exercises/bird-dog-combo.webp',
+  './images/exercises/forearm-plank-leg-lift.webp',
+  './images/exercises/side-plank-hip-dip.webp',
+  './images/exercises/prone-w-reach.webp',
+  './images/exercises/calf-raise-knee-drive.webp',
+  './images/exercises/hip-hinge-knee-drive.webp',
+  './images/exercises/push-up-shoulder-tap.webp',
+  './images/exercises/walkout-plank.webp',
+  './images/exercises/glute-bridge-leg-extension.webp',
+  './images/exercises/bear-plank-shoulder-tap.webp',
+  './images/exercises/plank-up-down.webp'
 ];
 
 self.addEventListener('install', (event) => {
