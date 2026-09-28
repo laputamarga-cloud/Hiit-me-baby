@@ -1,4 +1,4 @@
-const CACHE = 'hiit-me-baby-v8-12';
+const CACHE = 'hiit-me-baby-v8-13';
 const CORE = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const CORE = [
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './images/exercises/sentadilla-lenta.webp',
   './images/exercises/dead-bug-combo.webp',
   './images/exercises/bird-dog-combo.webp',
   './images/exercises/forearm-plank-leg-lift.webp',

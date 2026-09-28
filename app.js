@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.8.11';
+  const VERSION = '0.8.12';
 
   const EFFORT_SCALE_MAX = 5;
   // The readable labels mirror exactly what the current effort UI shows.
@@ -261,6 +261,23 @@
         ['Plancha antebrazos → plancha alta', 'Sube una mano cada vez y vuelve a antebrazos. Alterna el brazo que inicia.'],
         ['Dead bug: codo y rodilla → extensión', 'Acerca codo y rodilla contrarios; extiende ambos sin despegar la lumbar. Alterna lados.']
       ]
+    },
+    {
+      name: 'BÁSICO 6 · Moverse y ya',
+      subtitle: 'SIN MATERIAL · 6 ejercicios · 4:50–13:30 · 1–3 rondas',
+      equipment: 'Solo peso corporal · esterilla opcional',
+      warmup: 60,
+      roundBreak: 30,
+      workDuration: 30,
+      changeDuration: 10,
+      exercises: [
+        ['Sentadillas lentas', 'Baja con control y sube con ritmo. Si la cadera protesta, cambia este intervalo por puente de glúteo.'],
+        ['Flexiones', 'Haz las que salgan limpias. Apoya rodillas o eleva las manos si lo necesitas.'],
+        ['Boca abajo: brazos largos → codos', 'Lleva los codos hacia las costillas y alarga otra vez. Piernas y tronco tranquilos: no es Superman.'],
+        ['Shoulder taps', 'Toca el hombro contrario sin balancear la cadera. Apoya rodillas si hace falta.'],
+        ['Dead bug · contrarios', 'Alterna brazo y pierna contrarios sin despegar la lumbar.'],
+        ['Plancha de antebrazos', 'Abdomen y glúteos activos. Mantén una línea sólida y respira.']
+      ]
     }
   ];
 
@@ -344,6 +361,7 @@
   // Biblioteca visual completa: todas las rutinas de fuerza usan la misma mujer y el mismo estilo.
   // Las imágenes van incrustadas como WebP para que funcionen también sin conexión.
   const EXERCISE_IMAGES = {
+    "sentadilla-lenta": "./images/exercises/sentadilla-lenta.webp",
     "dead-bug-combo": "./images/exercises/dead-bug-combo.webp",
     "bird-dog-combo": "./images/exercises/bird-dog-combo.webp",
     "forearm-plank-leg-lift": "./images/exercises/forearm-plank-leg-lift.webp",
@@ -406,6 +424,10 @@
     "Patada de tríceps": "patada-triceps",
     "Remo vertical": "remo-vertical",
     "Shoulder taps": "shoulder-taps",
+    "Sentadillas lentas": "sentadilla-lenta",
+    "Boca abajo: brazos largos → codos": "prone-w-reach",
+    "Dead bug · contrarios": "dead-bug",
+    "Plancha de antebrazos": "plancha",
     "Dead bug: codo y rodilla → extensión": "dead-bug-combo",
     "Bird-dog: codo y rodilla → extensión": "bird-dog-combo",
     "Plancha de antebrazos + pierna alterna": "forearm-plank-leg-lift",
@@ -720,15 +742,16 @@
       const bikeNames=decreasing?['BICI 20 · Intervalos','BICI 20 · Base','BICI 12 · No negociable']:['BICI 20 · Base','BICI 20 · Intervalos','BICI 24 · Pirámide'];
       let strengthIndex=0,bikeIndex=0;
       const strengthTotal=scheduledDays.filter((item)=>item.mode==='strength').length;
+      const shortSession=Number(source.sessionMinutes)<=12;
       return scheduledDays.map((item)=>{
         const dayName=WEEKDAYS[item.day];
         if(item.mode==='bike'){
-          const routine=bikeNames[bikeIndex%bikeNames.length],position=bikeIndex++;
+          const routine=shortSession?'BICI 12 · No negociable':bikeNames[bikeIndex%bikeNames.length],position=bikeIndex++;
           const note=decreasing?(position===0?'intensidad':'ritmo sostenible'):'cardio guiado';
           return e('bike',routine,item.day,`${dayName} · ${note}`);
         }
-        let routine=strengthNames[strengthIndex%strengthNames.length];
-        if(decreasing&&strengthTotal===2&&strengthIndex===1&&!equipment.includes('dumbbells'))routine='Fuerza P3 · Core + estabilidad';
+        let routine=shortSession?'BÁSICO 6 · Moverse y ya':strengthNames[strengthIndex%strengthNames.length];
+        if(!shortSession&&decreasing&&strengthTotal===2&&strengthIndex===1&&!equipment.includes('dumbbells'))routine='Fuerza P3 · Core + estabilidad';
         const note=decreasing?(strengthIndex===0?'energía alta':strengthIndex===strengthTotal-1?'control':'ritmo medio'):'fuerza guiada';
         strengthIndex++;
         return e('strength',routine,item.day,`${dayName} · ${note}`);
@@ -745,13 +768,13 @@
     let out=[...(plans[source.goal]||plans.tone)];
     if(!equipment.includes('bike')){const replacements=['Core HIIT','Upper Body','Glúteo + posterior'];let r=0;out=out.map((item)=>item.mode==='bike'?e('strength',replacements[(r++)%replacements.length]):item);}
     const minutes=Number(source.sessionMinutes)||20;
-    if(minutes<=12)out=out.map((item)=>item.mode==='strength'?e('strength','Exprés 6'):e('bike','BICI 12 · No negociable'));
+    if(minutes<=12)out=out.map((item)=>item.mode==='strength'?e('strength','BÁSICO 6 · Moverse y ya'):e('bike','BICI 12 · No negociable'));
     else if(minutes>=25&&equipment.includes('dumbbells')&&['lose_fat','tone','strength','maintain'].includes(source.goal)&&source.experience!=='beginner'){
       const first=out.findIndex((item)=>item.mode==='strength');if(first>=0)out[first]=e('strength','Full Body · Completa');
     }
     if(!equipment.includes('dumbbells')){
       const bodyweight=['Fuerza P1 · Cuerpo completo','Fuerza P2 · Cuerpo completo','Fuerza P3 · Core + estabilidad','Fuerza P4 · Combinada'];let b=0;
-      out=out.map((item)=>item.mode==='strength'?e('strength',bodyweight[(b++)%bodyweight.length]):item);
+      out=out.map((item)=>item.mode==='strength'&&item.routine!=='BÁSICO 6 · Moverse y ya'?e('strength',bodyweight[(b++)%bodyweight.length]):item);
     }
     return out.slice(0,Math.max(2,Math.min(5,Number(source.days)||4)));
   }
