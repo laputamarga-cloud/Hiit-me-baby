@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.8.12';
+  const VERSION = '0.8.13';
 
   const EFFORT_SCALE_MAX = 5;
   // The readable labels mirror exactly what the current effort UI shows.
@@ -277,6 +277,25 @@
         ['Shoulder taps', 'Toca el hombro contrario sin balancear la cadera. Apoya rodillas si hace falta.'],
         ['Dead bug · contrarios', 'Alterna brazo y pierna contrarios sin despegar la lumbar.'],
         ['Plancha de antebrazos', 'Abdomen y glúteos activos. Mantén una línea sólida y respira.']
+      ]
+    },
+    {
+      name: 'Upper + Core + Glúteo',
+      subtitle: 'SIN MATERIAL · 8 ejercicios · ≈ 11:50–17:30 · recomendadas 2–3 rondas',
+      equipment: 'Solo peso corporal · esterilla opcional',
+      warmup: 60,
+      roundBreak: 30,
+      workDuration: 30,
+      changeDuration: 10,
+      exercises: [
+        ['Flexiones', 'Pecho, hombros y tríceps. Hazlas normales, con rodillas o con las manos elevadas; manda la técnica.'],
+        ['Boca abajo: brazos largos → codos', 'Jalón de dorsales: lleva los codos hacia las costillas y alarga otra vez. Piernas y tronco tranquilos.'],
+        ['Puente de glúteo', 'Empuja el suelo con los talones, no con las puntas. Sube y aprieta arriba sin cargar el gemelo.'],
+        ['Dead bug', 'Alterna brazo y pierna contrarios sin despegar la zona lumbar.'],
+        ['Plancha lateral derecha', 'Apoyo derecho. Mantén la cadera elevada y el cuerpo alineado.'],
+        ['Plancha lateral izquierda', 'Apoyo izquierdo. Mantén la cadera elevada y el cuerpo alineado.'],
+        ['Puente marchado', 'Solo si el gemelo está completamente tranquilo. Si avisa, haz otro puente normal empujando con los talones.'],
+        ['Shoulder taps', 'Toca el hombro contrario sin balancear la cadera. Apoya las rodillas si hace falta.']
       ]
     }
   ];
@@ -751,7 +770,7 @@
           return e('bike',routine,item.day,`${dayName} · ${note}`);
         }
         let routine=shortSession?'BÁSICO 6 · Moverse y ya':strengthNames[strengthIndex%strengthNames.length];
-        if(!shortSession&&decreasing&&strengthTotal===2&&strengthIndex===1&&!equipment.includes('dumbbells'))routine='Fuerza P3 · Core + estabilidad';
+        if(!shortSession&&decreasing&&strengthTotal===2&&strengthIndex===1&&!equipment.includes('dumbbells'))routine='Upper + Core + Glúteo';
         const note=decreasing?(strengthIndex===0?'energía alta':strengthIndex===strengthTotal-1?'control':'ritmo medio'):'fuerza guiada';
         strengthIndex++;
         return e('strength',routine,item.day,`${dayName} · ${note}`);
@@ -824,7 +843,7 @@
       ? 'Entrenamiento de hoy hecho. Recupera: sumar por sumar no mejora el plan.'
       : 'Hoy toca descanso. La energía también se entrena protegiéndola: paseo o movilidad suave solo si te apetece.';
     if(!rec.item)return `Bien. ${rec.plan.length}/${rec.plan.length}. Sin confeti: has hecho lo que dijiste que ibas a hacer. La semana que viene, repetimos.`;
-    if(profile?.energyTrend==='decreasing'&&rec.item.routine==='Fuerza P3 · Core + estabilidad')return `${WEEKDAYS[rec.item.day]||'Hoy'}: menos batería, más control. Elige las rondas que puedas hacer limpias; no necesitas perseguir la energía del principio de semana.`;
+    if(profile?.energyTrend==='decreasing'&&rec.item.routine==='Upper + Core + Glúteo')return `${WEEKDAYS[rec.item.day]||'Hoy'}: menos batería y las piernas ya tienen bastante con la bici. Elige 2 o 3 rondas limpias; si el gemelo avisa, cambia el puente marchado por otro puente normal.`;
     if(profile?.energyTrend==='decreasing'&&rec.item.routine==='Fuerza P4 · Combinada')return `${WEEKDAYS[rec.item.day]||'Hoy'}: aprovecha la energía más alta para la rutina combinada. Tú eliges las rondas; la técnica sigue mandando.`;
     if(rec.item.routine==='BICI 20 · Intervalos')return `${WEEKDAYS[rec.item.day]||'Hoy'}: intervalos de bici. Fuerte no significa desordenado.`;
     if(rec.item.routine==='BICI 20 · Base')return `${WEEKDAYS[rec.item.day]||'Hoy'}: bici base, sostenible y sin vaciar el depósito.`;
