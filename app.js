@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.8.13';
+  const VERSION = '0.8.14';
 
   const EFFORT_SCALE_MAX = 5;
   // The readable labels mirror exactly what the current effort UI shows.
@@ -226,7 +226,7 @@
     },
     {
       name: 'Fuerza P3 · Core + estabilidad',
-      subtitle: 'HIIT · SIN MATERIAL · 8 ejercicios · 1–3 rondas',
+      subtitle: 'HIIT · SIN MATERIAL · 8 ejercicios · 1–5 rondas',
       equipment: 'Solo peso corporal · esterilla opcional',
       warmup: 60,
       roundBreak: 30,
@@ -245,7 +245,7 @@
     },
     {
       name: 'Fuerza P4 · Combinada',
-      subtitle: 'HIIT · SIN MATERIAL · 8 ejercicios combinados · 1–3 rondas',
+      subtitle: 'HIIT · SIN MATERIAL · 8 ejercicios combinados · 1–5 rondas',
       equipment: 'Solo peso corporal · esterilla opcional',
       warmup: 60,
       roundBreak: 30,
@@ -264,7 +264,7 @@
     },
     {
       name: 'BÁSICO 6 · Moverse y ya',
-      subtitle: 'SIN MATERIAL · 6 ejercicios · 4:50–13:30 · 1–3 rondas',
+      subtitle: 'SIN MATERIAL · 6 ejercicios · 1–5 rondas',
       equipment: 'Solo peso corporal · esterilla opcional',
       warmup: 60,
       roundBreak: 30,
@@ -281,7 +281,7 @@
     },
     {
       name: 'Upper + Core + Glúteo',
-      subtitle: 'SIN MATERIAL · 8 ejercicios · ≈ 11:50–17:30 · recomendadas 2–3 rondas',
+      subtitle: 'SIN MATERIAL · 8 ejercicios · 1–5 rondas · recomendadas 2–3',
       equipment: 'Solo peso corporal · esterilla opcional',
       warmup: 60,
       roundBreak: 30,
@@ -510,7 +510,7 @@
   let mode = 'strength';
   let selectedIndex = 0;
   let rounds = Number(localStorage.getItem('hmb-rounds-v6')) || 3;
-  if (![1, 2, 3].includes(rounds)) rounds = 3;
+  if (![1, 2, 3, 4, 5].includes(rounds)) rounds = 3;
 
   let sequence = [];
   let timeline = [];

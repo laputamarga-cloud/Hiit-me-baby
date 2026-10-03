@@ -2,7 +2,7 @@
 
 PWA personal de entrenamiento con dos modos:
 
-- **Fuerza HIIT:** 30 s de trabajo + 10 s de descanso, 1/2/3 rondas, cuenta atrás 3-2-1, pitidos y voz.
+- **Fuerza HIIT:** 30 s de trabajo + 10 s de descanso, de 1 a 5 rondas, cuenta atrás 3-2-1, pitidos y voz.
 - **Bicicleta estática:** sesiones guiadas por bloques con avisos de intensidad y voz.
 
 ## Rutinas incluidas
