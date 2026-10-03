@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.8.14';
+  const VERSION = '0.8.15';
 
   const EFFORT_SCALE_MAX = 5;
   // The readable labels mirror exactly what the current effort UI shows.
@@ -1879,7 +1879,7 @@
   els.auditForm.addEventListener('submit',saveAuditCheckin);
   els.auditHistory.addEventListener('click',(event)=>{const button=event.target.closest('[data-audit-delete]');if(button)deleteAuditCheckin(button.dataset.auditDelete);});
 
-  document.querySelectorAll('[data-rounds]').forEach((button)=>button.addEventListener('click',()=>{rounds=Number(button.dataset.rounds);localStorage.setItem('hmb-rounds-v6',String(rounds));updateRoundButtons();updateDuration();}));
+  document.querySelectorAll('[data-rounds]').forEach((button)=>button.addEventListener('click',()=>{rounds=Number(button.dataset.rounds);localStorage.setItem('hmb-rounds-v6',String(rounds));renderLibrary();}));
   els.start.addEventListener('click',startWorkout);els.pause.addEventListener('click',togglePause);els.skip.addEventListener('click',skipStep);els.quit.addEventListener('click',quitWorkout);els.confirmWorkout.addEventListener('click',confirmCompletedWorkout);els.discardWorkout.addEventListener('click',discardCompletedWorkout);
   els.back.addEventListener('click',()=>{els.complete.hidden=true;els.library.hidden=false;els.effortPicker.hidden=true;if(profile)setSection('today');if(pendingReload)window.location.reload();});
   els.effortPicker.querySelectorAll('[data-effort]').forEach((button)=>button.addEventListener('click',()=>{pendingWorkoutEffort=Number(button.dataset.effort);els.effortPicker.querySelectorAll('[data-effort]').forEach((b)=>b.classList.toggle('active',b===button));saveActiveWorkout();}));
